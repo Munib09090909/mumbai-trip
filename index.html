@@ -7,104 +7,219 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --primary: #38bdf8;
-            --success: #4ade80;
-            --accent: #f59e0b;
-            --danger: #ef4444;
-            --text: #f8fafc;
+            --bg: #0f172a; --card: #1e293b; --primary: #38bdf8;
+            --success: #4ade80; --accent: #f59e0b; --danger: #ef4444; --text: #f8fafc;
         }
-
-        body { 
-            font-family: 'Segoe UI', Roboto, sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            margin: 0; 
-            padding: 20px;
-            padding-bottom: 100px;
-        }
-
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 15px; padding-bottom: 50px; }
         .container { max-width: 500px; margin: auto; }
-        
         h2 { text-align: center; color: var(--primary); margin-bottom: 5px; }
-        .subtitle { text-align: center; opacity: 0.7; font-size: 0.9em; margin-bottom: 20px; }
+        
+        /* Stats Styling */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-card { background: var(--card); padding: 12px; border-radius: 16px; text-align: center; border: 1px solid #334155; }
+        .stat-val { font-size: 1.3em; font-weight: bold; display: block; }
+        .stat-label { font-size: 0.7em; text-transform: uppercase; opacity: 0.6; }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
+        /* Group Fund Box */
+        .group-fund-section { 
+            background: rgba(74, 222, 128, 0.05); border: 1px dashed var(--success); 
+            padding: 15px; border-radius: 16px; margin-bottom: 15px; text-align: center; 
         }
 
-        .stat-card {
-            background: var(--card);
-            padding: 15px;
-            border-radius: 16px;
-            text-align: center;
-            border: 1px solid #334155;
-        }
+        /* Friend Cards */
+        .card { background: var(--card); padding: 15px; margin-bottom: 10px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .friend-meta b { font-size: 1.1em; }
+        .friend-meta span { color: var(--success); font-weight: bold; }
 
-        .stat-val { font-size: 1.4em; font-weight: bold; display: block; }
-        .stat-label { font-size: 0.75em; text-transform: uppercase; opacity: 0.6; }
-
-        .card {
-            background: var(--card);
-            padding: 16px;
-            margin-bottom: 12px;
-            border-radius: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
-
-        .friend-info b { font-size: 1.1em; }
-        .friend-info span { display: block; color: var(--success); font-weight: bold; }
-
-        .btn-group { display: flex; gap: 8px; }
-
-        button {
-            padding: 10px 14px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
+        /* Buttons */
+        button { padding: 10px 14px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         button:active { transform: scale(0.95); }
         .btn-add { background: var(--primary); color: white; }
-        .btn-extra { background: var(--card); color: var(--accent); border: 1px solid var(--accent); }
-        .btn-share { background: #25D366; color: white; width: 100%; margin-top: 10px; }
+        .btn-share { background: #25D366; color: white; width: 100%; margin-top: 10px; font-size: 1em; }
         
-        .progress-container {
-            background: var(--card);
-            padding: 15px;
-            border-radius: 16px;
-            margin-bottom: 20px;
+        /* History Section */
+        .history-box { background: var(--card); border-radius: 16px; padding: 15px; margin-top: 20px; max-height: 250px; overflow-y: auto; font-size: 0.85em; border: 1px solid #334155; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; }
+        .h-date { opacity: 0.5; font-size: 0.8em; }
+        
+        canvas { background: var(--card); border-radius: 16px; margin-top: 20px; padding: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Mumbai Trip 2025</h2>
+    
+    <div id="countdown" style="text-align:center; background:#1e293b; padding:10px; border-radius:12px; margin-bottom:15px; border: 1px solid var(--primary);">
+        <span style="color:var(--primary); font-weight:bold;" id="days-left">0</span> Saving Days Left (Sundays Excluded) 🪔
+    </div>
+
+    <div class="group-fund-section">
+        <div class="stat-label">✨ Group Fund (Found Money)</div>
+        <div class="stat-val" id="group-val" style="color:var(--success)">₹0</div>
+        <button onclick="addFoundMoney()" style="background:var(--success); color:white; margin-top:10px; width:100%;">+ Add Found Money</button>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-val" id="total">₹0</span>
+            <span class="stat-label">Trip Balance</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-val" id="remaining">₹0</span>
+            <span class="stat-label">Goal Target</span>
+        </div>
+    </div>
+
+    <div id="list"></div>
+
+    <button class="btn-share" onclick="shareToWhatsApp()">📲 Share Sync Link to WhatsApp</button>
+    <button onclick="addExpense()" style="background:var(--danger); color:white; width:100%; margin-top:10px;">💸 Record Expense (Spend)</button>
+
+    <canvas id="chart"></canvas>
+
+    <div class="history-box">
+        <h4 style="margin: 0 0 10px 0; color: var(--primary);">Transaction History</h4>
+        <div id="history-list"></div>
+    </div>
+
+    <div style="text-align:center; margin-top: 20px;">
+        <button onclick="if(confirm('Reset EVERYTHING?')) { localStorage.clear(); location.reload(); }" style="background:none; color:var(--danger); font-size:0.7em; opacity:0.5;">Reset All Data</button>
+    </div>
+</div>
+
+<script>
+let state = {
+    friends: [
+        {name: "Munib", paid: 0}, {name: "Nadim", paid: 0}, {name: "Ruhan", paid: 0},
+        {name: "Saeid", paid: 0}, {name: "Sahil", paid: 0}
+    ],
+    groupSavings: 0,
+    spent: 0,
+    history: [],
+    target: 25000
+};
+
+// Check for Sync Link Data
+const params = new URLSearchParams(window.location.search);
+if (params.get('data')) {
+    try {
+        state = JSON.parse(atob(params.get('data')));
+        localStorage.setItem('tripData', JSON.stringify(state));
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (e) { console.error("Sync Error"); }
+}
+
+function getSavingDaysLeft() {
+    const today = new Date();
+    const diwali = new Date("October 20, 2025");
+    let count = 0;
+    let cur = new Date(today);
+    while (cur <= diwali) {
+        if (cur.getDay() !== 0) count++;
+        cur.setDate(cur.getDate() + 1);
+    }
+    return count;
+}
+
+function log(msg) {
+    const time = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'short'});
+    state.history.unshift({ date: time, text: msg });
+    if(state.history.length > 20) state.history.pop();
+}
+
+function render() {
+    const totalSaved = state.friends.reduce((sum, f) => sum + f.paid, 0) + (state.groupSavings || 0);
+    const currentBalance = totalSaved - (state.spent || 0);
+    
+    document.getElementById('total').innerText = "₹" + currentBalance;
+    document.getElementById('group-val').innerText = "₹" + (state.groupSavings || 0);
+    document.getElementById('remaining').innerText = "₹" + Math.max(0, state.target - currentBalance);
+    document.getElementById('days-left').innerText = getSavingDaysLeft();
+
+    // Render Friends
+    let html = "";
+    state.friends.forEach((f, i) => {
+        html += `<div class="card">
+            <div class="friend-meta"><b>${f.name}</b><br><span>₹${f.paid}</span></div>
+            <button class="btn-add" onclick="addMoney(${i})">+20</button>
+        </div>`;
+    });
+    document.getElementById('list').innerHTML = html;
+
+    // Render History
+    document.getElementById('history-list').innerHTML = state.history.map(h => `
+        <div class="history-item">
+            <span>${h.text}</span>
+            <span class="h-date">${h.date}</span>
+        </div>
+    `).join('') || '<div style="opacity:0.5; text-align:center;">No transactions yet</div>';
+
+    updateChart();
+    localStorage.setItem('tripData', JSON.stringify(state));
+}
+
+function addMoney(i) {
+    state.friends[i].paid += 20;
+    log(`${state.friends[i].name} added ₹20`);
+    render();
+}
+
+function addFoundMoney() {
+    let val = prompt("How much money did the group find?");
+    if(val && !isNaN(val)) {
+        state.groupSavings += Number(val);
+        log(`✨ Found ₹${val} (Group Fund)`);
+        render();
+    }
+}
+
+function addExpense() {
+    let reason = prompt("What was the expense for?");
+    let val = prompt("How much was spent?");
+    if(val && !isNaN(val)) {
+        state.spent += Number(val);
+        log(`💸 Spent ₹${val} on ${reason}`);
+        render();
+    }
+}
+
+function shareToWhatsApp() {
+    const dataString = btoa(JSON.stringify(state));
+    const url = window.location.href.split('?')[0] + '?data=' + dataString;
+    const text = `🚀 Mumbai Trip Update!\nBalance: ₹${document.getElementById('total').innerText}\nDays Left: ${document.getElementById('days-left').innerText}\n\nSync your app here: ${url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+}
+
+function updateChart() {
+    const ctx = document.getElementById('chart').getContext('2d');
+    if (window.myChart) window.myChart.destroy();
+    window.myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: state.friends.map(f => f.name),
+            datasets: [{ 
+                label: 'Individual Savings', 
+                data: state.friends.map(f => f.paid), 
+                backgroundColor: '#38bdf8',
+                borderRadius: 5
+            }]
+        },
+        options: { 
+            responsive: true,
+            scales: { y: { beginAtZero: true, grid: { color: '#334155' } } },
+            plugins: { legend: { display: false } }
         }
+    });
+}
 
-        .progress-bar {
-            height: 10px;
-            background: #334155;
-            border-radius: 5px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-
-        #progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--success));
-            width: 0%;
-            transition: width 0.5s ease;
-        }
-
-        canvas { margin-top: 20px; background: var(--card); border-radius: 16px; padding: 10px; }
-
-        /* Hidden inputs */
-        .config-section { background: #1e293b; padding: 15px; border-radius: 16px; margin-top: 20px; display: none; }
-        .show-config { display: block !important; }
+// Initial Load
+const saved = localStorage.getItem('tripData');
+if (saved) state = JSON.parse(saved);
+render();
+</script>
+</body>
+</html>
     </style>
 </head>
 <body>
