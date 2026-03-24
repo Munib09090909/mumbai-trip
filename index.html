@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mumbai Trip Saver</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #38bdf8;
+            --success: #4ade80;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --text: #f8fafc;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .container { max-width: 500px; margin: auto; }
+        
+        h2 { text-align: center; color: var(--primary); margin-bottom: 5px; }
+        .subtitle { text-align: center; opacity: 0.7; font-size: 0.9em; margin-bottom: 20px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        .stat-val { font-size: 1.4em; font-weight: bold; display: block; }
+        .stat-label { font-size: 0.75em; text-transform: uppercase; opacity: 0.6; }
+
+        .card {
+            background: var(--card);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .friend-info b { font-size: 1.1em; }
+        .friend-info span { display: block; color: var(--success); font-weight: bold; }
+
+        .btn-group { display: flex; gap: 8px; }
+
+        button {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:active { transform: scale(0.95); }
+        .btn-add { background: var(--primary); color: white; }
+        .btn-extra { background: var(--card); color: var(--accent); border: 1px solid var(--accent); }
+        .btn-share { background: #25D366; color: white; width: 100%; margin-top: 10px; }
+        
+        .progress-container {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #334155;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        canvas { margin-top: 20px; background: var(--card); border-radius: 16px; padding: 10px; }
+
+        /* Hidden inputs */
+        .config-section { background: #1e293b; padding: 15px; border-radius: 16px; margin-top: 20px; display: none; }
+        .show-config { display: block !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Mumbai Trip 2024</h2>
+    <p class="subtitle">Saving ₹20 daily until Diwali</p>
+
+    <div class="progress-container">
+        <div style="display: flex; justify-content: space-between; font-size: 0.9em;">
+            <span>Target: ₹25,000</span>
+            <span id="percent-text">0%</span>
+        </div>
+        <div class="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-val" id="total">0</span>
+            <span class="stat-label">Total Saved</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-val" id="remaining">0</span>
+            <span class="stat-label">Remaining</span>
+        </div>
+    </div>
+
+    <div id="list"></div>
+
+    <button class="btn-share" onclick="shareToWhatsApp()">📲 Share Sync Link to Group</button>
+
+    <canvas id="chart"></canvas>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button onclick="toggleConfig()" style="background:none; color:gray; font-size: 0.8em;">⚙️ Settings & Backup</button>
+    </div>
+
+    <div id="config" class="config-section">
+        <label>Daily Goal Amount:</label>
+        <input type="number" id="dailyAmt" value="20" style="width:100%; padding:10px; margin:10px 0; border-radius:8px;">
+        <button class="btn-extra" onclick="importData()">📥 Import Shared Data</button>
+        <button style="background:var(--danger); color:white;" onclick="resetData()">Reset All</button>
+    </div>
+</div>
+
+<script>
+let state = {
+    friends: [
+        {name: "Munib", paid: 0},
+        {name: "Nadim", paid: 0},
+        {name: "Ruhan", paid: 0},
+        {name: "Saeid", paid: 0},
+        {name: "Sahil", paid: 0}
+    ],
+    target: 25000
+};
+
+// Load data from URL if it exists (Sync Feature)
+function checkURLData() {
+    const params = new URLSearchParams(window.location.search);
+    const data = params.get('data');
+    if (data) {
+        try {
+            state = JSON.parse(atob(data));
+            save();
+            // Clear URL so refreshing doesn't overwrite new changes
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (e) { console.error("Invalid data in URL"); }
+    }
+}
+
+function save() {
+    localStorage.setItem('tripData', JSON.stringify(state));
+    render();
+}
+
+function load() {
+    const saved = localStorage.getItem('tripData');
+    if (saved) state = JSON.parse(saved);
+}
+
+function addMoney(index) {
+    const amt = Number(document.getElementById('dailyAmt').value);
+    state.friends[index].paid += amt;
+    save();
+}
+
+function addExtra(index) {
+    const extra = prompt("Enter extra amount for " + state.friends[index].name);
+    if (extra && !isNaN(extra)) {
+        state.friends[index].paid += Number(extra);
+        save();
+    }
+}
+
+function shareToWhatsApp() {
+    const dataString = btoa(JSON.stringify(state));
+    const url = window.location.href.split('?')[0] + '?data=' + dataString;
+    const text = `🚀 Mumbai Trip Update! Total Saved: ₹${getTotal()}.\nClick to sync your app: ${url}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+}
+
+function getTotal() {
+    return state.friends.reduce((sum, f) => sum + f.paid, 0);
+}
+
+function render() {
+    const total = getTotal();
+    document.getElementById('total').innerText = "₹" + total;
+    document.getElementById('remaining').innerText = "₹" + (state.target - total);
+    
+    const percent = Math.min((total / state.target) * 100, 100);
+    document.getElementById('progress-fill').style.width = percent + "%";
+    document.getElementById('percent-text').innerText = Math.floor(percent) + "%";
+
+    let html = "";
+    state.friends.forEach((f, i) => {
+        html += `
+        <div class="card">
+            <div class="friend-info">
+                <b>${f.name}</b>
+                <span>₹${f.paid}</span>
+            </div>
+            <div class="btn-group">
+                <button class="btn-add" onclick="addMoney(${i})">+20</button>
+                <button class="btn-extra" onclick="addExtra(${i})">₹+</button>
+            </div>
+        </div>`;
+    });
+    document.getElementById('list').innerHTML = html;
+    updateChart();
+}
+
+function updateChart() {
+    const ctx = document.getElementById('chart').getContext('2d');
+    if (window.myChart) window.myChart.destroy();
+    window.myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: state.friends.map(f => f.name),
+            datasets: [{
+                label: 'Savings per Person',
+                data: state.friends.map(f => f.paid),
+                backgroundColor: '#38bdf8',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, grid: { color: '#334155' } } }
+        }
+    });
+}
+
+function toggleConfig() { document.getElementById('config').classList.toggle('show-config'); }
+
+function resetData() {
+    if(confirm("Are you sure? This will delete everyone's savings!")) {
+        state.friends.forEach(f => f.paid = 0);
+        save();
+    }
+}
+
+checkURLData();
+load();
+render();
+</script>
+</body>
+</html>
