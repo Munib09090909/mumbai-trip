@@ -3,35 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumbai Trip Pro</title>
+    <title>Mumbai Trip 2026 Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0b0f1a; --card: #161c2d; --primary: #38bdf8; --success: #4ade80; --accent: #f59e0b; --danger: #f87171; --text: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; padding-bottom: 90px; }
+        :root { --bg: #0b0f1a; --card: #161c2d; --primary: #38bdf8; --success: #4ade80; --danger: #f87171; --text: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; padding-bottom: 100px; }
         .container { max-width: 450px; margin: auto; }
-        
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .settings-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; }
-        
         .days-box { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #334155; }
         .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
         .stat-card { background: var(--card); padding: 15px; border-radius: 18px; text-align: center; border: 1px solid #2d3748; }
-        
         .card { background: var(--card); padding: 16px; margin-bottom: 12px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d3748; }
-        .name { font-weight: 600; font-size: 1.1em; display: block; }
-        
-        button { border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        button { border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
         .btn-add { background: var(--primary); color: white; padding: 10px 18px; }
         .btn-group { background: var(--success); color: white; width: 100%; padding: 14px; margin-bottom: 20px; }
-        .btn-share { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #25D366; color: white; padding: 15px; z-index: 100; }
-
-        /* Modal Styles */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 24px; width: 85%; max-width: 380px; max-height: 80vh; overflow-y: auto; border: 1px solid #334155; }
-        input { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 10px; width: 100%; box-sizing: border-box; margin: 15px 0; }
-        
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #2d3748; font-size: 0.85em; }
-        .del-btn { background: var(--danger); color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.7em; }
+        .btn-share { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #25D366; color: white; padding: 15px; font-size: 1.1em; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 24px; width: 85%; max-width: 380px; border: 1px solid #334155; max-height: 80vh; overflow-y: auto; }
+        input { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; margin: 8px 0; box-sizing: border-box; }
+        .edit-row { display: grid; grid-template-columns: 1fr 1fr 40px; gap: 5px; align-items: center; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -44,44 +35,51 @@
 
     <div class="days-box">
         <span style="font-size: 2.5em; font-weight: 800; color: var(--primary);" id="days-left">0</span><br>
-        <span style="opacity: 0.6; text-transform: uppercase; font-size: 0.7em;">Saving Days Left</span>
+        <span style="opacity: 0.6; text-transform: uppercase; font-size: 0.7em;">Saving Days Left till Diwali</span>
     </div>
 
     <div class="stats-row">
         <div class="stat-card">
             <span style="display:block; font-size: 1.2em; font-weight: bold;" id="total-val">₹0</span>
-            <span style="font-size: 0.7em; opacity: 0.5;">SAVED</span>
+            <span style="font-size: 0.7em; opacity: 0.5;">CURRENTLY SAVED</span>
         </div>
         <div class="stat-card">
             <span style="display:block; font-size: 1.2em; font-weight: bold; color: var(--success);" id="expected-val">₹0</span>
-            <span style="font-size: 0.7em; opacity: 0.5;">EXPECTED</span>
+            <span style="font-size: 0.7em; opacity: 0.5;">EXPECTED TOTAL</span>
         </div>
     </div>
 
     <button class="btn-group" onclick="addFound()">✨ Add Group Found Money</button>
     <div id="friend-list"></div>
 
-    <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px; border: 1px solid #2d3748;"></canvas>
+    <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px;"></canvas>
     
     <div style="text-align: center; margin: 20px 0;">
-        <button class="settings-btn" style="background:none; border-color:var(--primary); color:var(--primary);" onclick="openModal('historyModal')">📜 View History</button>
+        <button class="settings-btn" style="color:var(--primary);" onclick="openModal('historyModal')">📜 View History</button>
         <br><br>
-        <button style="background:none; color:var(--danger); font-size:0.7em; opacity:0.5;" onclick="resetData()">Reset Everything</button>
+        <button style="background:none; color:var(--danger); opacity:0.5; font-size:0.7em;" onclick="resetData()">Reset Everything</button>
     </div>
 </div>
 
 <div class="modal" id="settingsModal">
     <div class="modal-content">
         <h3>Trip Settings</h3>
-        <label style="font-size: 0.8em; opacity:0.6;">Daily Saving Amount:</label>
-        <input type="number" id="daily-target" value="20">
-        <button class="btn-add" style="width: 100%;" onclick="closeModal('settingsModal')">Save Changes</button>
+        <label style="font-size: 0.8em;">Daily Saving Amount (₹):</label>
+        <input type="number" id="daily-target" value="20" onchange="render()">
+        
+        <hr style="border-color:#334155; margin: 15px 0;">
+        
+        <h4>Manage Friends</h4>
+        <div id="manage-friends-list"></div>
+        <button class="btn-add" style="width:100%; margin-top:10px; background:var(--success);" onclick="addNewFriend()">+ Add New Friend</button>
+        
+        <button class="btn-add" style="width:100%; margin-top:20px;" onclick="closeModal('settingsModal')">Save & Close</button>
     </div>
 </div>
 
 <div class="modal" id="historyModal">
     <div class="modal-content">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; justify-content:space-between;">
             <h3>History</h3>
             <button onclick="closeModal('historyModal')" style="background:none; color:white; font-size:1.5em;">&times;</button>
         </div>
@@ -89,17 +87,21 @@
     </div>
 </div>
 
-<button class="btn-share" onclick="shareToWhatsApp()">📲 Share Sync to WhatsApp</button>
+<button class="btn-share" onclick="whatsappCommunityShare()">📲 Share Status to Community</button>
 
 <script>
 const DIWALI = new Date("November 8, 2026");
 const START = new Date("March 24, 2026");
-const NAMES = ["Munib", "Nadim", "Ruhan", "Saeid", "Sahil"];
 
-let savings = JSON.parse(localStorage.getItem('mumbai_v5_savings')) || [0,0,0,0,0];
-let groupFund = Number(localStorage.getItem('mumbai_v5_group')) || 0;
-let dailyGoal = Number(localStorage.getItem('mumbai_v5_goal')) || 20;
-let historyLog = JSON.parse(localStorage.getItem('mumbai_v5_history')) || [];
+let data = JSON.parse(localStorage.getItem("mumbai_v6_data")) || {
+    friends: [
+        {name: "Munib", paid: 0}, {name: "Nadim", paid: 0}, 
+        {name: "Ruhan", paid: 0}, {name: "Saeid", paid: 0}, {name: "Sahil", paid: 0}
+    ],
+    groupExtra: 0,
+    dailyGoal: 20,
+    history: []
+};
 
 function getDays(from, to) {
     let count = 0, cur = new Date(from);
@@ -107,75 +109,99 @@ function getDays(from, to) {
     return count;
 }
 
-function update() {
-    dailyGoal = Number(document.getElementById('daily-target').value);
+function render() {
+    data.dailyGoal = Number(document.getElementById('daily-target').value);
     const totalDays = getDays(START, DIWALI);
-    const expected = (totalDays * dailyGoal * 5) + groupFund;
+    const expected = (totalDays * data.dailyGoal * data.friends.length) + data.groupExtra;
     const daysLeft = getDays(new Date() > START ? new Date() : START, DIWALI);
-    const currentSaved = savings.reduce((a, b) => a + b, 0) + groupFund;
+    const totalSaved = data.friends.reduce((s,f) => s + f.paid, 0) + data.groupExtra;
 
     document.getElementById('days-left').innerText = daysLeft;
     document.getElementById('expected-val').innerText = "₹" + expected.toLocaleString();
-    document.getElementById('total-val').innerText = "₹" + currentSaved.toLocaleString();
+    document.getElementById('total-val').innerText = "₹" + totalSaved.toLocaleString();
 
+    // Main List
     let html = "";
-    NAMES.forEach((name, i) => {
+    data.friends.forEach((f, i) => {
         html += `<div class="card">
-            <div><span class="name">${name}</span><span style="color:var(--success); font-weight:bold;">₹${savings[i]}</span></div>
-            <button class="btn-add" onclick="add(${i})">+₹${dailyGoal}</button>
+            <div><span style="display:block; font-weight:bold;">${f.name}</span><span style="color:var(--success)">₹${f.paid}</span></div>
+            <button class="btn-add" onclick="add(${i})">+₹${data.dailyGoal}</button>
         </div>`;
     });
     document.getElementById('friend-list').innerHTML = html;
-    
-    document.getElementById('history-list').innerHTML = historyLog.map((h, idx) => `
-        <div class="history-item">
-            <span>${h.msg} <br><small style="opacity:0.5">${h.time}</small></span>
-            <button class="del-btn" onclick="deleteHistory(${idx})">Del</button>
-        </div>
-    `).join('') || '<p style="text-align:center; opacity:0.5;">No history yet</p>';
 
-    save(); drawChart();
+    // Settings Manage List
+    let manageHtml = "";
+    data.friends.forEach((f, i) => {
+        manageHtml += `<div class="edit-row">
+            <input type="text" value="${f.name}" onchange="editFriend(${i}, 'name', this.value)">
+            <input type="number" value="${f.paid}" onchange="editFriend(${i}, 'paid', this.value)">
+            <button onclick="removeFriend(${i})" style="background:var(--danger); color:white; border-radius:8px;">×</button>
+        </div>`;
+    });
+    document.getElementById('manage-friends-list').innerHTML = manageHtml;
+
+    // History
+    document.getElementById('history-list').innerHTML = data.history.map((h, i) => `
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #2d3748; font-size:0.8em;">
+            <span>${h.msg} <br><small style="opacity:0.4">${h.time}</small></span>
+        </div>
+    `).join('') || "No history yet.";
+
+    localStorage.setItem("mumbai_v6_data", JSON.stringify(data));
+    drawChart();
 }
 
 function add(i) {
-    savings[i] += dailyGoal;
-    logAction(`${NAMES[i]} added ₹${dailyGoal}`);
-    update();
+    data.friends[i].paid += data.dailyGoal;
+    logAction(`${data.friends[i].name} added ₹${data.dailyGoal}`);
+    render();
 }
 
 function addFound() {
     let a = prompt("Amount found?");
-    if(a) { 
-        groupFund += Number(a); 
-        logAction(`✨ Group Fund +₹${a}`);
-        update(); 
-    }
+    if(a) { data.groupExtra += Number(a); logAction(`✨ Group Fund +₹${a}`); render(); }
+}
+
+function editFriend(i, field, val) {
+    if (field === 'paid') data.friends[i].paid = Number(val);
+    else data.friends[i].name = val;
+    render();
+}
+
+function addNewFriend() {
+    data.friends.push({name: "New Friend", paid: 0});
+    render();
+}
+
+function removeFriend(i) {
+    if(confirm("Remove this friend?")) { data.friends.splice(i, 1); render(); }
 }
 
 function logAction(msg) {
-    const time = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
-    historyLog.unshift({msg, time});
-    if(historyLog.length > 30) historyLog.pop();
-}
-
-function deleteHistory(idx) {
-    if(confirm("Delete this entry?")) { historyLog.splice(idx, 1); update(); }
+    const time = new Date().toLocaleString([], {day:'numeric', month:'short', hour: '2-digit', minute:'2-digit'});
+    data.history.unshift({msg, time});
+    if(data.history.length > 20) data.history.pop();
 }
 
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; update(); }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; render(); }
 
-function save() {
-    localStorage.setItem('mumbai_v5_savings', JSON.stringify(savings));
-    localStorage.setItem('mumbai_v5_group', groupFund);
-    localStorage.setItem('mumbai_v5_goal', dailyGoal);
-    localStorage.setItem('mumbai_v5_history', JSON.stringify(historyLog));
-}
-
-function shareToWhatsApp() {
-    const data = btoa(JSON.stringify({savings, groupFund, dailyGoal, historyLog}));
-    const url = window.location.href.split('?')[0] + '?data=' + data;
-    window.open(`https://wa.me/?text=${encodeURIComponent("🚀 Mumbai Trip Update: " + url)}`);
+function whatsappCommunityShare() {
+    const daysLeft = document.getElementById('days-left').innerText;
+    const total = document.getElementById('total-val').innerText;
+    let text = `🚢 *MUMBAI TRIP UPDATE* \n`;
+    text += `📅 Days Left: ${daysLeft}\n`;
+    text += `---------------------------\n`;
+    data.friends.forEach(f => {
+        text += `👤 *${f.name}*: ₹${f.paid}\n`;
+    });
+    text += `✨ *Group Fund*: ₹${data.groupExtra}\n`;
+    text += `---------------------------\n`;
+    text += `💰 *Total Saved: ${total}*\n`;
+    text += `🎯 *Target: ${document.getElementById('expected-val').innerText}*`;
+    
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
 }
 
 function drawChart() {
@@ -183,20 +209,15 @@ function drawChart() {
     if (window.mChart) window.mChart.destroy();
     window.mChart = new Chart(ctx, {
         type: 'bar',
-        data: { labels: NAMES, datasets: [{ data: savings, backgroundColor: '#38bdf8', borderRadius: 8 }] },
+        data: { labels: data.friends.map(f=>f.name), datasets: [{ data: data.friends.map(f=>f.paid), backgroundColor: '#38bdf8', borderRadius: 8 }] },
         options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#1e293b'} } } }
     });
 }
 
-function resetData() { if(confirm("Reset everything?")) { localStorage.clear(); location.reload(); } }
+function resetData() { if(confirm("This will clear all savings. Are you sure?")) { localStorage.clear(); location.reload(); } }
 
-const params = new URLSearchParams(window.location.search);
-if (params.get('data')) {
-    const d = JSON.parse(atob(params.get('data')));
-    savings = d.savings; groupFund = d.groupFund; dailyGoal = d.dailyGoal; historyLog = d.historyLog || [];
-    document.getElementById('daily-target').value = dailyGoal;
-}
-update();
+document.getElementById('daily-target').value = data.dailyGoal;
+render();
 </script>
 </body>
 </html>
