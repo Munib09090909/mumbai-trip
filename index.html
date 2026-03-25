@@ -7,80 +7,85 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg: #0b0f1a; --card: #161c2d; --primary: #38bdf8; --success: #4ade80; --accent: #f59e0b; --danger: #f87171; --text: #f8fafc; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; padding-bottom: 80px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; padding-bottom: 90px; }
         .container { max-width: 450px; margin: auto; }
         
-        /* Header & Settings */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .settings-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 12px; font-size: 0.8em; cursor: pointer; }
+        .settings-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; }
         
-        /* Stats Cards */
         .days-box { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #334155; }
         .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
         .stat-card { background: var(--card); padding: 15px; border-radius: 18px; text-align: center; border: 1px solid #2d3748; }
         
-        /* Friend Cards */
         .card { background: var(--card); padding: 16px; margin-bottom: 12px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d3748; }
         .name { font-weight: 600; font-size: 1.1em; display: block; }
-        .amt { color: var(--success); font-weight: bold; font-size: 0.9em; }
-
-        /* Buttons */
+        
         button { border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
         .btn-add { background: var(--primary); color: white; padding: 10px 18px; }
-        .btn-group { background: var(--success); color: white; width: 100%; padding: 14px; margin-bottom: 20px; font-size: 1em; }
-        .btn-share { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #25D366; color: white; padding: 15px; font-size: 1em; box-shadow: 0 10px 20px rgba(0,0,0,0.3); z-index: 100; }
+        .btn-group { background: var(--success); color: white; width: 100%; padding: 14px; margin-bottom: 20px; }
+        .btn-share { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #25D366; color: white; padding: 15px; z-index: 100; }
 
-        /* Modal Settings */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 24px; width: 85%; max-width: 350px; text-align: center; border: 1px solid #334155; }
-        input { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 10px; width: 100%; box-sizing: border-box; margin: 15px 0; font-size: 1.1em; }
-
-        .history-btn { background: none; color: #64748b; font-size: 0.8em; margin-top: 10px; text-decoration: underline; }
+        /* Modal Styles */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 24px; width: 85%; max-width: 380px; max-height: 80vh; overflow-y: auto; border: 1px solid #334155; }
+        input { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 10px; width: 100%; box-sizing: border-box; margin: 15px 0; }
+        
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #2d3748; font-size: 0.85em; }
+        .del-btn { background: var(--danger); color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.7em; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h2 style="margin:0; font-size: 1.4em;">🚢 Mumbai Trip</h2>
-        <button class="settings-btn" onclick="toggleSettings()">⚙️ Settings</button>
+        <h2 style="margin:0;">🚢 Mumbai Trip</h2>
+        <button class="settings-btn" onclick="openModal('settingsModal')">⚙️ Settings</button>
     </div>
 
     <div class="days-box">
         <span style="font-size: 2.5em; font-weight: 800; color: var(--primary);" id="days-left">0</span><br>
-        <span style="font-size: 0.8em; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Saving Days Remaining</span>
+        <span style="opacity: 0.6; text-transform: uppercase; font-size: 0.7em;">Saving Days Left</span>
     </div>
 
     <div class="stats-row">
         <div class="stat-card">
             <span style="display:block; font-size: 1.2em; font-weight: bold;" id="total-val">₹0</span>
-            <span style="font-size: 0.7em; opacity: 0.5;">CURRENT SAVED</span>
+            <span style="font-size: 0.7em; opacity: 0.5;">SAVED</span>
         </div>
         <div class="stat-card">
             <span style="display:block; font-size: 1.2em; font-weight: bold; color: var(--success);" id="expected-val">₹0</span>
-            <span style="font-size: 0.7em; opacity: 0.5;">EXPECTED TOTAL</span>
+            <span style="font-size: 0.7em; opacity: 0.5;">EXPECTED</span>
         </div>
     </div>
 
     <button class="btn-group" onclick="addFound()">✨ Add Group Found Money</button>
-
     <div id="friend-list"></div>
 
     <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px; border: 1px solid #2d3748;"></canvas>
     
-    <div style="text-align: center; margin-top: 20px;">
-        <div style="font-size: 0.7em; opacity: 0.4;">Group Fund: ₹<span id="group-val">0</span></div>
-        <button class="history-btn" onclick="resetData()">Reset All Trip Data</button>
+    <div style="text-align: center; margin: 20px 0;">
+        <button class="settings-btn" style="background:none; border-color:var(--primary); color:var(--primary);" onclick="openModal('historyModal')">📜 View History</button>
+        <br><br>
+        <button style="background:none; color:var(--danger); font-size:0.7em; opacity:0.5;" onclick="resetData()">Reset Everything</button>
     </div>
 </div>
 
 <div class="modal" id="settingsModal">
     <div class="modal-content">
-        <h3>Edit Trip Goal</h3>
-        <p style="font-size: 0.8em; opacity: 0.6;">Change the daily saving amount for all friends.</p>
+        <h3>Trip Settings</h3>
+        <label style="font-size: 0.8em; opacity:0.6;">Daily Saving Amount:</label>
         <input type="number" id="daily-target" value="20">
-        <button class="btn-add" style="width: 100%;" onclick="toggleSettings()">Save & Close</button>
+        <button class="btn-add" style="width: 100%;" onclick="closeModal('settingsModal')">Save Changes</button>
+    </div>
+</div>
+
+<div class="modal" id="historyModal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>History</h3>
+            <button onclick="closeModal('historyModal')" style="background:none; color:white; font-size:1.5em;">&times;</button>
+        </div>
+        <div id="history-list"></div>
     </div>
 </div>
 
@@ -91,9 +96,10 @@ const DIWALI = new Date("November 8, 2026");
 const START = new Date("March 24, 2026");
 const NAMES = ["Munib", "Nadim", "Ruhan", "Saeid", "Sahil"];
 
-let savings = JSON.parse(localStorage.getItem('mumbai_v4_savings')) || [0, 0, 0, 0, 0];
-let groupFund = Number(localStorage.getItem('mumbai_v4_group')) || 0;
-let dailyGoal = Number(localStorage.getItem('mumbai_v4_goal')) || 20;
+let savings = JSON.parse(localStorage.getItem('mumbai_v5_savings')) || [0,0,0,0,0];
+let groupFund = Number(localStorage.getItem('mumbai_v5_group')) || 0;
+let dailyGoal = Number(localStorage.getItem('mumbai_v5_goal')) || 20;
+let historyLog = JSON.parse(localStorage.getItem('mumbai_v5_history')) || [];
 
 function getDays(from, to) {
     let count = 0, cur = new Date(from);
@@ -111,36 +117,67 @@ function update() {
     document.getElementById('days-left').innerText = daysLeft;
     document.getElementById('expected-val').innerText = "₹" + expected.toLocaleString();
     document.getElementById('total-val').innerText = "₹" + currentSaved.toLocaleString();
-    document.getElementById('group-val').innerText = groupFund;
 
     let html = "";
     NAMES.forEach((name, i) => {
         html += `<div class="card">
-            <div><span class="name">${name}</span><span class="amt">₹${savings[i]}</span></div>
+            <div><span class="name">${name}</span><span style="color:var(--success); font-weight:bold;">₹${savings[i]}</span></div>
             <button class="btn-add" onclick="add(${i})">+₹${dailyGoal}</button>
         </div>`;
     });
     document.getElementById('friend-list').innerHTML = html;
+    
+    document.getElementById('history-list').innerHTML = historyLog.map((h, idx) => `
+        <div class="history-item">
+            <span>${h.msg} <br><small style="opacity:0.5">${h.time}</small></span>
+            <button class="del-btn" onclick="deleteHistory(${idx})">Del</button>
+        </div>
+    `).join('') || '<p style="text-align:center; opacity:0.5;">No history yet</p>';
+
     save(); drawChart();
 }
 
-function add(i) { savings[i] += dailyGoal; update(); }
-function addFound() { let a = prompt("Amount found?"); if(a) { groupFund += Number(a); update(); } }
-function toggleSettings() { 
-    const m = document.getElementById('settingsModal');
-    m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+function add(i) {
+    savings[i] += dailyGoal;
+    logAction(`${NAMES[i]} added ₹${dailyGoal}`);
     update();
 }
+
+function addFound() {
+    let a = prompt("Amount found?");
+    if(a) { 
+        groupFund += Number(a); 
+        logAction(`✨ Group Fund +₹${a}`);
+        update(); 
+    }
+}
+
+function logAction(msg) {
+    const time = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+    historyLog.unshift({msg, time});
+    if(historyLog.length > 30) historyLog.pop();
+}
+
+function deleteHistory(idx) {
+    if(confirm("Delete this entry?")) { historyLog.splice(idx, 1); update(); }
+}
+
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; update(); }
+
 function save() {
-    localStorage.setItem('mumbai_v4_savings', JSON.stringify(savings));
-    localStorage.setItem('mumbai_v4_group', groupFund);
-    localStorage.setItem('mumbai_v4_goal', dailyGoal);
+    localStorage.setItem('mumbai_v5_savings', JSON.stringify(savings));
+    localStorage.setItem('mumbai_v5_group', groupFund);
+    localStorage.setItem('mumbai_v5_goal', dailyGoal);
+    localStorage.setItem('mumbai_v5_history', JSON.stringify(historyLog));
 }
+
 function shareToWhatsApp() {
-    const data = btoa(JSON.stringify({savings, groupFund, dailyGoal}));
+    const data = btoa(JSON.stringify({savings, groupFund, dailyGoal, historyLog}));
     const url = window.location.href.split('?')[0] + '?data=' + data;
-    window.open(`https://wa.me/?text=${encodeURIComponent("🚀 Mumbai Trip Sync: " + url)}`);
+    window.open(`https://wa.me/?text=${encodeURIComponent("🚀 Mumbai Trip Update: " + url)}`);
 }
+
 function drawChart() {
     const ctx = document.getElementById('chart').getContext('2d');
     if (window.mChart) window.mChart.destroy();
@@ -150,13 +187,13 @@ function drawChart() {
         options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#1e293b'} } } }
     });
 }
-function resetData() { if(confirm("Reset everything?")) { savings=[0,0,0,0,0]; groupFund=0; save(); location.reload(); } }
 
-// LOAD DATA FROM URL
+function resetData() { if(confirm("Reset everything?")) { localStorage.clear(); location.reload(); } }
+
 const params = new URLSearchParams(window.location.search);
 if (params.get('data')) {
     const d = JSON.parse(atob(params.get('data')));
-    savings = d.savings; groupFund = d.groupFund; dailyGoal = d.dailyGoal;
+    savings = d.savings; groupFund = d.groupFund; dailyGoal = d.dailyGoal; historyLog = d.historyLog || [];
     document.getElementById('daily-target').value = dailyGoal;
 }
 update();
