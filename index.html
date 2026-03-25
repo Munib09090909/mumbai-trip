@@ -1,145 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mumbai Trip Saver</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: sans-serif; background:#111; color:white; padding:15px; }
-        .card { background:#1e1e1e; padding:15px; margin:10px 0; border-radius:15px; border: 1px solid #333; }
-        .stats { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1em; color: #38bdf8; }
-        button { padding:10px; border:none; border-radius:10px; margin:5px 5px 5px 0; cursor: pointer; font-weight: bold; }
-        .blue { background:#2196f3; color:white; }
-        .green { background:#4caf50; color:white; }
-        .red { background:#f44336; color:white; }
-        .group-box { border: 1px dashed #4caf50; background: #1a2e1a; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: none; }
+        :root { --bg: #0f172a; --card: #1e293b; --primary: #38bdf8; --success: #4ade80; --accent: #f59e0b; --danger: #ef4444; --text: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; }
+        .container { max-width: 500px; margin: auto; }
+        .stat-card { background: var(--card); padding: 15px; border-radius: 16px; text-align: center; border: 1px solid #334155; margin-bottom: 10px; }
+        .stat-val { font-size: 1.4em; font-weight: bold; display: block; color: var(--primary); }
+        .label { font-size: 0.7em; text-transform: uppercase; opacity: 0.6; letter-spacing: 1px; }
+        .card { background: var(--card); padding: 15px; margin-bottom: 10px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
+        input { background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin: 5px 0; font-size: 16px; }
+        button { padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; background: var(--primary); color: white; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
+        .history-box { background: var(--card); border-radius: 16px; padding: 15px; margin-top: 20px; max-height: 200px; overflow-y: auto; border: 1px solid #334155; font-size: 0.85em; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; }
     </style>
 </head>
 <body>
 
-    <h2>🚢 Mumbai Trip 2025</h2>
+<div class="container">
+    <h2 style="text-align:center;">🚢 Mumbai Trip 2026</h2>
+    
+    <div class="stat-card">
+        <span class="stat-val" id="days-left">0</span>
+        <span class="label">Saving Days Left (No Sundays)</span>
+    </div>
 
-    <div class="card">
-        <div class="stats">
-            <span>Goal: ₹25,000</span>
-            <span id="days-left">0</span> Days Left
+    <div class="card" style="display: block; border-color: var(--accent);">
+        <span class="label" style="color: var(--accent);">Daily Saving Goal per Friend</span>
+        <input type="number" id="daily-target" value="20" oninput="update()">
+        <div style="margin-top: 10px; display: flex; justify-content: space-between;">
+            <span class="label">Expected Total:</span>
+            <b id="expected-val" style="color: var(--success);">₹0</b>
         </div>
-        <p style="font-size: 0.8em; opacity: 0.7; margin-top: 5px;">*Sundays are excluded from counting</p>
     </div>
 
-    <div class="card group-box">
-        <b>✨ Group Fund (Found Money)</b>
-        <div style="font-size: 1.5em; margin: 10px 0;">₹<span id="group-val">0</span></div>
-        <button class="green" onclick="addGroupMoney()">+ Add Found Money</button>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="stat-card"><span class="stat-val" id="total-val">₹0</span><span class="label">Current Saved</span></div>
+        <div class="stat-card"><span class="stat-val" id="group-val">₹0</span><span class="label">Group Fund</span></div>
     </div>
 
-    <div id="list"></div>
+    <button onclick="addFound()" style="background:var(--success); width:100%; margin-bottom: 10px;">✨ Add Found Money</button>
 
-    <div class="card">
-        <div style="font-size: 1.2em;">Total Balance: <b>₹<span id="total">0</span></b></div>
-        <button class="blue" style="width: 100%; margin-top: 10px;" onclick="share()">📲 Share Sync to WhatsApp</button>
-        <button class="red" style="width: 100%; margin-top: 5px; background: none; border: 1px solid #f44336;" onclick="reset()">Reset Everything</button>
+    <div id="friend-list"></div>
+
+    <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:16px; padding:10px;"></canvas>
+
+    <div class="history-box">
+        <b class="label">Saving History</b>
+        <div id="history-list" style="margin-top:10px;"></div>
     </div>
 
-    <canvas id="chart"></canvas>
+    <button onclick="resetData()" style="background:none; color:var(--danger); width:100%; margin-top:20px; font-size:0.7em; border: 1px solid var(--danger);">Reset All Progress</button>
+</div>
 
 <script>
-let state = {
-    friends: [
-        {name: "Munib", paid: 0}, {name: "Nadim", paid: 0}, {name: "Ruhan", paid: 0},
-        {name: "Saeid", paid: 0}, {name: "Sahil", paid: 0}
-    ],
-    groupFund: 0,
-    target: 25000
-};
+// CONFIG
+const DIWALI = new Date("November 8, 2026");
+const START = new Date("March 24, 2026");
+const NAMES = ["Munib", "Nadim", "Ruhan", "Saeid", "Sahil"];
 
-// 1. Logic for counting days (Excluding Sundays)
-function calculateDays() {
-    const today = new Date();
-    const diwali = new Date("October 20, 2025");
+// LOAD DATA
+let savings = JSON.parse(localStorage.getItem('mumbai_v3_savings')) || [0, 0, 0, 0, 0];
+let groupFund = Number(localStorage.getItem('mumbai_v3_group')) || 0;
+let historyLog = JSON.parse(localStorage.getItem('mumbai_v3_history')) || [];
+
+function getDays(from, to) {
     let count = 0;
-    let cur = new Date(today);
-    while (cur <= diwali) {
-        if (cur.getDay() !== 0) count++; // Skip Sunday
+    let cur = new Date(from);
+    while (cur <= to) {
+        if (cur.getDay() !== 0) count++;
         cur.setDate(cur.getDate() + 1);
     }
-    document.getElementById('days-left').innerText = count;
+    return count;
 }
 
-// 2. Main Render Function
-function render() {
+function update() {
+    const daily = Number(document.getElementById('daily-target').value) || 0;
+    const totalDays = getDays(START, DIWALI);
+    const expected = (totalDays * daily * 5) + groupFund;
+    
+    const today = new Date();
+    const daysLeft = getDays(today > START ? today : START, DIWALI);
+    const currentSaved = savings.reduce((a, b) => a + b, 0) + groupFund;
+
+    // Update UI
+    document.getElementById('days-left').innerText = daysLeft;
+    document.getElementById('expected-val').innerText = "₹" + expected.toLocaleString();
+    document.getElementById('total-val').innerText = "₹" + currentSaved.toLocaleString();
+    document.getElementById('group-val').innerText = "₹" + groupFund;
+
     let html = "";
-    state.friends.forEach((f, i) => {
-        html += `
-        <div class="card">
-            <div style="display:flex; justify-content:space-between;">
-                <b>${f.name}</b> <span>₹${f.paid}</span>
-            </div>
-            <button class="blue" onclick="addMoney(${i})">+ ₹20</button>
+    NAMES.forEach((name, i) => {
+        html += `<div class="card">
+            <div><b>${name}</b><br><span style="color:var(--success)">₹${savings[i]}</span></div>
+            <button onclick="add(${i})">+₹${daily}</button>
         </div>`;
     });
-    document.getElementById('list').innerHTML = html;
+    document.getElementById('friend-list').innerHTML = html;
 
-    const total = state.friends.reduce((s, f) => s + f.paid, 0) + state.groupFund;
-    document.getElementById('total').innerText = total;
-    document.getElementById('group-val').innerText = state.groupFund;
+    // History
+    document.getElementById('history-list').innerHTML = historyLog.map(h => `
+        <div class="history-item"><span>${h.msg}</span><span style="opacity:0.5">${h.time}</span></div>
+    `).join('') || '<div style="text-align:center; opacity:0.3;">No history yet</div>';
 
-    updateChart();
-    localStorage.setItem('mumbaiData', JSON.stringify(state));
+    save();
+    drawChart();
 }
 
-function addMoney(i) {
-    state.friends[i].paid += 20;
-    render();
+function add(i) {
+    const amt = Number(document.getElementById('daily-target').value);
+    savings[i] += amt;
+    log(`${NAMES[i]} added ₹${amt}`);
+    update();
 }
 
-function addGroupMoney() {
-    let amt = prompt("How much found money are you adding?");
-    if(amt && !isNaN(amt)) {
-        state.groupFund += Number(amt);
-        render();
+function addFound() {
+    let a = prompt("Amount found?");
+    if(a && !isNaN(a)) {
+        groupFund += Number(a);
+        log(`✨ Found ₹${a} for Group Fund`);
+        update();
     }
 }
 
-function share() {
-    const data = btoa(JSON.stringify(state));
-    const url = window.location.href.split('?')[0] + '?data=' + data;
-    window.open("https://wa.me/?text=" + encodeURIComponent("Mumbai Trip Sync: " + url));
+function log(msg) {
+    const now = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short'});
+    historyLog.unshift({ msg, time: now });
+    if(historyLog.length > 15) historyLog.pop();
 }
 
-function reset() {
-    if(confirm("Delete all savings?")) {
-        localStorage.clear();
-        location.reload();
+function save() {
+    localStorage.setItem('mumbai_v3_savings', JSON.stringify(savings));
+    localStorage.setItem('mumbai_v3_group', groupFund);
+    localStorage.setItem('mumbai_v3_history', JSON.stringify(historyLog));
+}
+
+function resetData() {
+    if(confirm("Are you sure? This will delete all your savings and history!")) {
+        savings=[0,0,0,0,0]; groupFund=0; historyLog=[]; save(); update();
     }
 }
 
-// Chart Logic
-function updateChart() {
+function drawChart() {
     const ctx = document.getElementById('chart').getContext('2d');
     if (window.mChart) window.mChart.destroy();
     window.mChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: state.friends.map(f => f.name),
-            datasets: [{ label: 'Savings', data: state.friends.map(f => f.paid), backgroundColor: '#2196f3' }]
+            labels: NAMES,
+            datasets: [{ label: 'Savings', data: savings, backgroundColor: '#38bdf8', borderRadius: 6 }]
         },
-        options: { scales: { y: { beginAtZero: true } } }
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#334155'} } } }
     });
 }
 
-// Sync from Link
-const params = new URLSearchParams(window.location.search);
-if (params.get('data')) {
-    state = JSON.parse(atob(params.get('data')));
-} else {
-    const saved = localStorage.getItem('mumbaiData');
-    if (saved) state = JSON.parse(saved);
-}
-
-calculateDays();
-render();
+update();
 </script>
 </body>
 </html>
