@@ -6,7 +6,7 @@
     <title>Mumbai Trip 2026 Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0b0f1a; --card: #161c2d; --primary: #38bdf8; --success: #4ade80; --danger: #f87171; --text: #f8fafc; }
+        :root { --bg: #0b0f1a; --card: #161c2d; --primary: #38bdf8; --success: #4ade80; --danger: #f87171; --text: #f8fafc; --accent: #818cf8; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; padding-bottom: 100px; }
         .container { max-width: 450px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -20,9 +20,12 @@
         .btn-group { background: var(--success); color: white; width: 100%; padding: 14px; margin-bottom: 20px; }
         .btn-share { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #25D366; color: white; padding: 15px; font-size: 1.1em; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 24px; width: 85%; max-width: 380px; border: 1px solid #334155; max-height: 80vh; overflow-y: auto; }
-        input { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; margin: 8px 0; box-sizing: border-box; }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 24px; width: 85%; max-width: 380px; border: 1px solid #334155; max-height: 85vh; overflow-y: auto; }
+        input[type="number"], input[type="text"] { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; margin: 8px 0; box-sizing: border-box; }
+        .calc-box { background: #1e293b; padding: 15px; border-radius: 15px; margin: 15px 0; border: 1px solid var(--accent); }
+        input[type="range"] { width: 100%; margin: 10px 0; accent-color: var(--primary); }
         .edit-row { display: grid; grid-template-columns: 1fr 1fr 40px; gap: 5px; align-items: center; margin-bottom: 10px; }
+        .debt { color: var(--danger); font-size: 0.75em; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -52,7 +55,7 @@
     <button class="btn-group" onclick="addFound()">✨ Add Group Found Money</button>
     <div id="friend-list"></div>
 
-    <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px;"></canvas>
+    <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px; border:1px solid #2d3748;"></canvas>
     
     <div style="text-align: center; margin: 20px 0;">
         <button class="settings-btn" style="color:var(--primary);" onclick="openModal('historyModal')">📜 View History</button>
@@ -63,11 +66,28 @@
 
 <div class="modal" id="settingsModal">
     <div class="modal-content">
-        <h3>Trip Settings</h3>
-        <label style="font-size: 0.8em;">Daily Saving Amount (₹):</label>
-        <input type="number" id="daily-target" value="20" onchange="render()">
+        <h3>🧮 Savings Calculator</h3>
+        <div class="calc-box">
+            <label style="font-size: 0.8em;">Daily Save: <b>₹<span id="calc-daily-val">20</span></b></label>
+            <input type="range" id="calc-daily" min="10" max="500" step="10" value="20" oninput="runCalc()">
+            
+            <label style="font-size: 0.8em;">Total Friends: <b><span id="calc-ppl-val">5</span></b></label>
+            <input type="range" id="calc-ppl" min="1" max="20" value="5" oninput="runCalc()">
+            
+            <label style="font-size: 0.8em;">Time (Months): <b><span id="calc-time-val">7</span></b></label>
+            <input type="range" id="calc-time" min="1" max="24" value="7" oninput="runCalc()">
+            
+            <div style="margin-top:10px; text-align:center;">
+                <span style="font-size:0.7em; opacity:0.7;">Estimated Total:</span><br>
+                <b style="color:var(--success); font-size:1.2em;" id="calc-total">₹0</b>
+            </div>
+        </div>
+
+        <hr style="border-color:#334155; margin: 20px 0;">
         
-        <hr style="border-color:#334155; margin: 15px 0;">
+        <h3>Trip Settings</h3>
+        <label style="font-size: 0.8em;">Official Daily Goal (₹):</label>
+        <input type="number" id="daily-target" value="20" onchange="render()">
         
         <h4>Manage Friends</h4>
         <div id="manage-friends-list"></div>
@@ -93,11 +113,8 @@
 const DIWALI = new Date("November 8, 2026");
 const START = new Date("March 24, 2026");
 
-let data = JSON.parse(localStorage.getItem("mumbai_v6_data")) || {
-    friends: [
-        {name: "Munib", paid: 0}, {name: "Nadim", paid: 0}, 
-        {name: "Ruhan", paid: 0}, {name: "Saeid", paid: 0}, {name: "Sahil", paid: 0}
-    ],
+let data = JSON.parse(localStorage.getItem("mumbai_v8_data")) || {
+    friends: [{name: "Munib", paid: 0}, {name: "Nadim", paid: 0}, {name: "Ruhan", paid: 0}, {name: "Saeid", paid: 0}, {name: "Sahil", paid: 0}],
     groupExtra: 0,
     dailyGoal: 20,
     history: []
@@ -109,28 +126,47 @@ function getDays(from, to) {
     return count;
 }
 
+function runCalc() {
+    const d = document.getElementById('calc-daily').value;
+    const p = document.getElementById('calc-ppl').value;
+    const m = document.getElementById('calc-time').value;
+    document.getElementById('calc-daily-val').innerText = d;
+    document.getElementById('calc-ppl-val').innerText = p;
+    document.getElementById('calc-time-val').innerText = m;
+    const total = d * p * (m * 26);
+    document.getElementById('calc-total').innerText = "₹" + total.toLocaleString();
+}
+
 function render() {
     data.dailyGoal = Number(document.getElementById('daily-target').value);
     const totalDays = getDays(START, DIWALI);
     const expected = (totalDays * data.dailyGoal * data.friends.length) + data.groupExtra;
     const daysLeft = getDays(new Date() > START ? new Date() : START, DIWALI);
     const totalSaved = data.friends.reduce((s,f) => s + f.paid, 0) + data.groupExtra;
+    
+    // Debt Calculation
+    const today = new Date();
+    const daysPassed = getDays(START, today > START ? today : START);
+    const shouldHavePaid = daysPassed * data.dailyGoal;
 
     document.getElementById('days-left').innerText = daysLeft;
     document.getElementById('expected-val').innerText = "₹" + expected.toLocaleString();
     document.getElementById('total-val').innerText = "₹" + totalSaved.toLocaleString();
 
-    // Main List
     let html = "";
     data.friends.forEach((f, i) => {
+        const debt = shouldHavePaid - f.paid;
         html += `<div class="card">
-            <div><span style="display:block; font-weight:bold;">${f.name}</span><span style="color:var(--success)">₹${f.paid}</span></div>
+            <div>
+                <span style="display:block; font-weight:bold;">${f.name}</span>
+                <span style="color:var(--success)">₹${f.paid}</span>
+                ${debt > 0 ? `<span class="debt"> (Owes: ₹${debt})</span>` : ''}
+            </div>
             <button class="btn-add" onclick="add(${i})">+₹${data.dailyGoal}</button>
         </div>`;
     });
     document.getElementById('friend-list').innerHTML = html;
 
-    // Settings Manage List
     let manageHtml = "";
     data.friends.forEach((f, i) => {
         manageHtml += `<div class="edit-row">
@@ -141,15 +177,14 @@ function render() {
     });
     document.getElementById('manage-friends-list').innerHTML = manageHtml;
 
-    // History
-    document.getElementById('history-list').innerHTML = data.history.map((h, i) => `
-        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #2d3748; font-size:0.8em;">
+    document.getElementById('history-list').innerHTML = data.history.map(h => `
+        <div style="padding:8px 0; border-bottom:1px solid #2d3748; font-size:0.8em;">
             <span>${h.msg} <br><small style="opacity:0.4">${h.time}</small></span>
         </div>
-    `).join('') || "No history yet.";
+    `).join('') || "No history.";
 
-    localStorage.setItem("mumbai_v6_data", JSON.stringify(data));
-    drawChart();
+    localStorage.setItem("mumbai_v8_data", JSON.stringify(data));
+    runCalc(); drawChart();
 }
 
 function add(i) {
@@ -188,19 +223,21 @@ function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; render(); }
 
 function whatsappCommunityShare() {
-    const daysLeft = document.getElementById('days-left').innerText;
-    const total = document.getElementById('total-val').innerText;
+    const today = new Date();
+    const daysPassed = getDays(START, today > START ? today : START);
+    const shouldHavePaid = daysPassed * data.dailyGoal;
+
     let text = `🚢 *MUMBAI TRIP UPDATE* \n`;
-    text += `📅 Days Left: ${daysLeft}\n`;
+    text += `📅 Days Left: ${document.getElementById('days-left').innerText}\n`;
     text += `---------------------------\n`;
-    data.friends.forEach(f => {
-        text += `👤 *${f.name}*: ₹${f.paid}\n`;
+    data.friends.forEach(f => { 
+        const debt = shouldHavePaid - f.paid;
+        text += `👤 *${f.name}*: ₹${f.paid}${debt > 0 ? ` (Owes: ₹${debt})` : ''}\n`; 
     });
     text += `✨ *Group Fund*: ₹${data.groupExtra}\n`;
     text += `---------------------------\n`;
-    text += `💰 *Total Saved: ${total}*\n`;
+    text += `💰 *Total Saved: ${document.getElementById('total-val').innerText}*\n`;
     text += `🎯 *Target: ${document.getElementById('expected-val').innerText}*`;
-    
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
 }
 
@@ -214,7 +251,7 @@ function drawChart() {
     });
 }
 
-function resetData() { if(confirm("This will clear all savings. Are you sure?")) { localStorage.clear(); location.reload(); } }
+function resetData() { if(confirm("Reset all?")) { localStorage.clear(); location.reload(); } }
 
 document.getElementById('daily-target').value = data.dailyGoal;
 render();
