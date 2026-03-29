@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumbai Trip LIVE 2026</title>
+    <title>Mumbai Trip 2026 | Smart Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg: #0b0f1a; --card: #161c2d; --primary: #38bdf8; --success: #4ade80; --danger: #f87171; --text: #f8fafc; --accent: #818cf8; }
@@ -23,7 +23,6 @@
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: var(--card); padding: 25px; border-radius: 24px; width: 85%; max-width: 380px; border: 1px solid #334155; max-height: 85vh; overflow-y: auto; }
         input { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; margin: 8px 0; box-sizing: border-box; }
-        .status-msg { font-size: 0.75em; font-weight: bold; margin-left: 5px; }
         .sync-indicator { font-size: 0.6em; text-align: center; opacity: 0.5; margin-bottom: 10px; }
     </style>
 </head>
@@ -31,13 +30,13 @@
 
 <div id="loader" class="loading-overlay">
     <h2 style="color:var(--primary);">🚢 Mumbai Trip 2026</h2>
-    <p>Syncing Live Data with Cloud...</p>
+    <p>Loading Live Group Data...</p>
 </div>
 
 <div class="container">
     <div class="header">
         <h2 style="margin:0;">🚢 Mumbai Live</h2>
-        <button class="settings-btn" onclick="openModal('settingsModal')">⚙️ Admin</button>
+        <button class="settings-btn" onclick="checkPass('settings')">⚙️ Admin</button>
     </div>
 
     <div class="sync-indicator" id="sync-status">Connected & Secure</div>
@@ -52,20 +51,21 @@
         <div class="stat-card"><span id="balance-val" style="display:block; font-size:1.2em; font-weight:bold; color:var(--success);">₹0</span><small>CASH IN HAND</small></div>
     </div>
 
-    <button class="btn-group" onclick="addFound()">✨ Add Group Found Money</button>
+    <button class="btn-group" onclick="checkPass('found')">✨ Add Group Found Money</button>
     <div id="friend-list"></div>
 
     <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px; border:1px solid #2d3748;"></canvas>
     
     <div style="text-align: center; margin: 20px 0;">
         <button class="settings-btn" style="color:var(--primary);" onclick="openModal('historyModal')">📜 View History</button>
+        <br><br>
+        <button style="background:none; color:var(--danger); opacity:0.3; font-size:0.6em;" onclick="logout()">Logout Admin</button>
     </div>
 </div>
 
 <div class="modal" id="settingsModal">
     <div class="modal-content">
         <h3>Admin Settings</h3>
-        <p style="font-size:0.7em; opacity:0.6;">Changes update live for all friends.</p>
         <label>Daily Goal (₹):</label>
         <input type="number" id="daily-target" value="20" onchange="updateGoal(this.value)">
         <div id="manage-friends-list"></div>
@@ -85,39 +85,58 @@
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbzJwspa9tNV3D2mPwxN7JNRFmI0SbjKE9-VltIBKznochvAK59QADkbweQXEWyUezgS0w/exec";
-const DIWALI = new Date("November 8, 2026");
+const ADMIN_PASS = "1234"; 
 const START = new Date("March 24, 2026");
+const DIWALI = new Date("November 8, 2026");
 
-let data = {
-    friends: [{name: "Munib", paid: 0}, {name: "Nadim", paid: 0}, {name: "Ruhan", paid: 0}, {name: "Saeid", paid: 0}, {name: "Sahil", paid: 0}],
-    groupExtra: 0, dailyGoal: 20, history: []
-};
+let data = { friends: [], groupExtra: 0, dailyGoal: 20, history: [] };
+let isAdmin = localStorage.getItem('isMumbaiAdmin') === 'true';
 
 async function loadFromCloud() {
     try {
         const response = await fetch(API_URL);
         const cloudData = await response.json();
         if (cloudData.friends) data = cloudData;
-        document.getElementById('loader').style.opacity = '0';
-        setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+        document.getElementById('loader').style.display = 'none';
         render();
     } catch (e) {
-        console.log("Empty cloud or error, using local data.");
         document.getElementById('loader').style.display = 'none';
         render();
     }
 }
 
 async function saveToCloud() {
-    document.getElementById('sync-status').innerText = "☁️ Syncing to Cloud...";
+    document.getElementById('sync-status').innerText = "☁️ Updating Cloud...";
     await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
-    document.getElementById('sync-status').innerText = "✅ Live & Synced";
+    document.getElementById('sync-status').innerText = "✅ Live & Secure";
 }
 
-function getDays(from, to) {
-    let count = 0, cur = new Date(from);
-    while (cur <= to) { if (cur.getDay() !== 0) count++; cur.setDate(cur.getDate() + 1); }
-    return count;
+function checkPass(action, index = null) {
+    if (isAdmin) {
+        executeAction(action, index);
+        return;
+    }
+    const p = prompt("Enter Admin Password:");
+    if (p === ADMIN_PASS) {
+        isAdmin = true;
+        localStorage.setItem('isMumbaiAdmin', 'true');
+        executeAction(action, index);
+    } else if (p !== null) {
+        alert("Wrong Password!");
+    }
+}
+
+function executeAction(action, index) {
+    if (action === 'add') addMoney(index);
+    if (action === 'found') addFound();
+    if (action === 'settings') openModal('settingsModal');
+}
+
+function logout() {
+    isAdmin = false;
+    localStorage.removeItem('isMumbaiAdmin');
+    alert("Admin Logged Out");
+    location.reload();
 }
 
 function render() {
@@ -128,15 +147,12 @@ function render() {
     document.getElementById('days-left').innerText = getDays(today > START ? today : START, DIWALI);
     document.getElementById('total-val').innerText = "₹" + totalSaved.toLocaleString();
     document.getElementById('balance-val').innerText = "₹" + totalSaved.toLocaleString();
-    document.getElementById('daily-target').value = data.dailyGoal;
 
     let html = "";
     data.friends.forEach((f, i) => {
         const diff = f.paid - should;
-        const status = diff < 0 ? `<span class="status-msg" style="color:var(--danger)">Owes: ₹${Math.abs(diff)}</span>` : 
-                      diff > 0 ? `<span class="status-msg" style="color:var(--primary)">Extra: ₹${diff}</span>` : 
-                      `<span class="status-msg" style="color:var(--success)">On Track</span>`;
-        html += `<div class="card"><div><b>${f.name}</b> <br> ₹${f.paid} ${status}</div><button class="btn-add" onclick="add(${i})">+₹${data.dailyGoal}</button></div>`;
+        const color = diff < 0 ? 'var(--danger)' : 'var(--success)';
+        html += `<div class="card"><div><b>${f.name}</b> <br> ₹${f.paid} <span style="font-size:0.7em; font-weight:bold; color:${color}">${diff < 0 ? 'Owes: ₹'+Math.abs(diff) : 'Extra: ₹'+diff}</span></div><button class="btn-add" onclick="checkPass('add', ${i})">${isAdmin ? '+' : '🔒'}₹${data.dailyGoal}</button></div>`;
     });
     document.getElementById('friend-list').innerHTML = html;
 
@@ -153,20 +169,33 @@ function render() {
     drawChart();
 }
 
-async function add(i) {
+function getDays(from, to) {
+    let count = 0, cur = new Date(from);
+    while (cur <= to) { if (cur.getDay() !== 0) count++; cur.setDate(cur.getDate() + 1); }
+    return count;
+}
+
+async function addMoney(i) {
     data.friends[i].paid += data.dailyGoal;
     logAction(`${data.friends[i].name} +₹${data.dailyGoal}`);
     render();
     await saveToCloud();
 }
 
+async function addFound() { 
+    let a = prompt("Amount?"); 
+    if(a){ data.groupExtra += Number(a); logAction(`✨ Fund +₹${a}`); render(); await saveToCloud(); } 
+}
+
+function logAction(msg) { 
+    data.history.unshift({msg, time: new Date().toLocaleString([], {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}); 
+    if(data.history.length > 15) data.history.pop(); 
+}
+
 function updateGoal(val) { data.dailyGoal = Number(val); render(); saveToCloud(); }
 async function edit(i, f, v) { if(f==='paid') data.friends[i].paid = Number(v); else data.friends[i].name = v; render(); await saveToCloud(); }
-async function addFound() { let a = prompt("Amount?"); if(a){ data.groupExtra += Number(a); logAction(`✨ Fund +₹${a}`); render(); await saveToCloud(); } }
 async function addNewFriend() { data.friends.push({name: "New Friend", paid: 0}); render(); await saveToCloud(); }
 async function remove(i) { if(confirm("Remove?")) { data.friends.splice(i, 1); render(); await saveToCloud(); } }
-function logAction(msg) { data.history.unshift({msg, time: new Date().toLocaleString([], {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}); if(data.history.length > 15) data.history.pop(); }
-
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
@@ -188,10 +217,7 @@ function drawChart() {
     window.mChart = new Chart(ctx, { type: 'bar', data: { labels: data.friends.map(f=>f.name), datasets: [{ data: data.friends.map(f=>f.paid), backgroundColor: '#38bdf8', borderRadius: 8 }] }, options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#1e293b'} } } } });
 }
 
-// Initial Sync
 loadFromCloud();
-
-// Auto-Refresh friends screen every 60 seconds
 setInterval(loadFromCloud, 60000);
 </script>
 </body>
