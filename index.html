@@ -3,222 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumbai Trip 2026 | Smart Admin</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Mumbai Trip | Group Sync</title>
     <style>
-        :root { --bg: #0b0f1a; --card: #161c2d; --primary: #38bdf8; --success: #4ade80; --danger: #f87171; --text: #f8fafc; --accent: #818cf8; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; padding-bottom: 100px; }
-        .container { max-width: 450px; margin: auto; }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; transition: 0.5s; }
+        :root { --bg: #0b0e14; --card: #1c222d; --primary: #38bdf8; --accent: #818cf8; --text: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; }
+        .container { max-width: 420px; margin: auto; }
+        
+        /* Header & Actions */
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .settings-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; }
-        .days-box { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #334155; }
-        .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
-        .stat-card { background: var(--card); padding: 15px; border-radius: 18px; text-align: center; border: 1px solid #2d3748; }
-        .card { background: var(--card); padding: 16px; margin-bottom: 12px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d3748; }
-        button { border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
-        .btn-add { background: var(--primary); color: white; padding: 10px 18px; }
-        .btn-group { background: var(--success); color: white; width: 100%; padding: 14px; margin-bottom: 20px; }
-        .btn-share { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #25D366; color: white; padding: 15px; font-size: 1.1em; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 24px; width: 85%; max-width: 380px; border: 1px solid #334155; max-height: 85vh; overflow-y: auto; }
-        input { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; margin: 8px 0; box-sizing: border-box; }
-        .sync-indicator { font-size: 0.6em; text-align: center; opacity: 0.5; margin-bottom: 10px; }
+        .top-btns { display: flex; gap: 8px; }
+        
+        /* Stats */
+        .main-stat { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 25px; border-radius: 24px; text-align: center; border: 1px solid #334155; margin-bottom: 20px; }
+        .total-amt { font-size: 2.5em; font-weight: 800; color: var(--primary); display: block; }
+        
+        /* Calculation Tool */
+        .calc-box { background: var(--accent); color: white; padding: 15px; border-radius: 18px; margin-bottom: 20px; cursor: pointer; text-align: center; font-weight: bold; box-shadow: 0 4px 15px rgba(129, 140, 248, 0.3); }
+
+        /* Friend Cards */
+        .friend-card { background: var(--card); padding: 18px; border-radius: 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d3748; }
+        .friend-meta b { font-size: 1.1em; display: block; margin-bottom: 4px; }
+        .btn-group { display: flex; gap: 6px; }
+        
+        .btn { border: none; padding: 10px 14px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-add { background: #334155; color: var(--primary); border: 1px solid var(--primary); }
+        .btn-custom { background: var(--primary); color: #000; }
+        .btn-ghost { background: transparent; border: 1px solid #475569; color: #94a3b8; font-size: 0.8em; }
+
+        .history-box { background: #00000055; border-radius: 15px; padding: 15px; font-size: 0.85em; max-height: 120px; overflow-y: auto; color: #94a3b8; border: 1px solid #1e293b; }
+        input[type="file"] { display: none; }
     </style>
 </head>
 <body>
 
-<div id="loader" class="loading-overlay">
-    <h2 style="color:var(--primary);">🚢 Mumbai Trip 2026</h2>
-    <p>Loading Live Group Data...</p>
-</div>
-
 <div class="container">
     <div class="header">
-        <h2 style="margin:0;">🚢 Mumbai Live</h2>
-        <button class="settings-btn" onclick="checkPass('settings')">⚙️ Admin</button>
+        <h2 style="margin:0;">🚢 Mumbai 2026</h2>
+        <div class="top-btns">
+            <button class="btn btn-ghost" onclick="exportData()">💾 Backup</button>
+            <label class="btn btn-ghost">📂 Import <input type="file" onchange="importData(event)"></label>
+        </div>
     </div>
 
-    <div class="sync-indicator" id="sync-status">Connected & Secure</div>
-
-    <div class="days-box">
-        <span style="font-size: 2.5em; font-weight: 800; color: var(--primary);" id="days-left">0</span><br>
-        <span style="opacity: 0.6; text-transform: uppercase; font-size: 0.7em;">Days Left till Diwali</span>
+    <div class="main-stat">
+        <small style="text-transform: uppercase; letter-spacing: 1px; opacity: 0.7;">Total Group Savings</small>
+        <span class="total-amt" id="total-val">₹0</span>
     </div>
 
-    <div class="stats-row">
-        <div class="stat-card"><span id="total-val" style="display:block; font-size:1.2em; font-weight:bold;">₹0</span><small>SAVED</small></div>
-        <div class="stat-card"><span id="balance-val" style="display:block; font-size:1.2em; font-weight:bold; color:var(--success);">₹0</span><small>CASH IN HAND</small></div>
+    <div class="calc-box" onclick="runFutureCalc()">
+        🔮 Future Savings Calculator
     </div>
 
-    <button class="btn-group" onclick="checkPass('found')">✨ Add Group Found Money</button>
     <div id="friend-list"></div>
 
-    <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px; border:1px solid #2d3748;"></canvas>
-    
-    <div style="text-align: center; margin: 20px 0;">
-        <button class="settings-btn" style="color:var(--primary);" onclick="openModal('historyModal')">📜 View History</button>
-        <br><br>
-        <button style="background:none; color:var(--danger); opacity:0.3; font-size:0.6em;" onclick="logout()">Logout Admin</button>
+    <div style="margin-top: 25px;">
+        <h4 style="margin: 0 0 10px 5px;">📜 Recent Activity</h4>
+        <div class="history-box" id="logs"></div>
     </div>
-</div>
 
-<div class="modal" id="settingsModal">
-    <div class="modal-content">
-        <h3>Admin Settings</h3>
-        <label>Daily Goal (₹):</label>
-        <input type="number" id="daily-target" value="20" onchange="updateGoal(this.value)">
-        <div id="manage-friends-list"></div>
-        <button class="btn-add" style="width:100%; background:var(--success); margin-bottom:10px;" onclick="addNewFriend()">+ Add Friend</button>
-        <button class="btn-add" style="width:100%;" onclick="closeModal('settingsModal')">Close & Sync</button>
-    </div>
+    <button class="btn btn-custom" style="width:100%; margin-top:20px; padding:15px;" onclick="logExpense()">💸 Record Trip Expense</button>
 </div>
-
-<div class="modal" id="historyModal">
-    <div class="modal-content">
-        <div style="display:flex; justify-content:space-between;"><h3>History</h3><button onclick="closeModal('historyModal')" style="background:none; color:white; font-size:1.5em;">&times;</button></div>
-        <div id="history-list"></div>
-    </div>
-</div>
-
-<button class="btn-share" onclick="whatsappCommunityShare()">📲 Share Live Status</button>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzJwspa9tNV3D2mPwxN7JNRFmI0SbjKE9-VltIBKznochvAK59QADkbweQXEWyUezgS0w/exec";
-const ADMIN_PASS = "1234"; 
-const START = new Date("March 24, 2026");
-const DIWALI = new Date("November 8, 2026");
+    let state = JSON.parse(localStorage.getItem('mumbaiTripDataV4')) || {
+        friends: [
+            { name: "Munib", paid: 0 },
+            { name: "Friend 2", paid: 0 },
+            { name: "Friend 3", paid: 0 },
+            { name: "Friend 4", paid: 0 }
+        ],
+        spent: 0,
+        logs: []
+    };
 
-let data = { friends: [], groupExtra: 0, dailyGoal: 20, history: [] };
-let isAdmin = localStorage.getItem('isMumbaiAdmin') === 'true';
+    function render() {
+        const total = state.friends.reduce((acc, f) => acc + f.paid, 0);
+        document.getElementById('total-val').innerText = "₹" + total.toLocaleString();
 
-async function loadFromCloud() {
-    try {
-        const response = await fetch(API_URL);
-        const cloudData = await response.json();
-        if (cloudData.friends) data = cloudData;
-        document.getElementById('loader').style.display = 'none';
+        let html = "";
+        state.friends.forEach((f, i) => {
+            html += `
+            <div class="friend-card">
+                <div class="friend-meta">
+                    <b>${f.name}</b>
+                    <small style="color:#94a3b8">Saved: ₹${f.paid}</small>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-add" onclick="addMoney(${i}, 30)">+30</button>
+                    <button class="btn btn-custom" onclick="customAdd(${i})">➕ Custom</button>
+                </div>
+            </div>`;
+        });
+        document.getElementById('friend-list').innerHTML = html;
+        document.getElementById('logs').innerHTML = state.logs.map(l => `<div style="margin-bottom:5px;">${l}</div>`).join('') || "No activity yet...";
+        localStorage.setItem('mumbaiTripDataV4', JSON.stringify(state));
+    }
+
+    function runFutureCalc() {
+        const daily = prompt("If one person saves this much daily:", "30");
+        const months = prompt("For how many months?", "3");
+        
+        if (daily && months) {
+            const days = months * 30;
+            const perPerson = daily * days;
+            const groupTotal = perPerson * 4;
+            
+            alert(`📈 PLAN RESULTS:\n\n` +
+                  `Per Person: ₹${perPerson.toLocaleString()}\n` +
+                  `Total for 4 Friends: ₹${groupTotal.toLocaleString()}\n\n` +
+                  `That's enough for a great trip!`);
+        }
+    }
+
+    function addMoney(i, amt) {
+        state.friends[i].paid += Number(amt);
+        state.logs.unshift(`✅ ${state.friends[i].name} added ₹${amt}`);
+        if(state.logs.length > 20) state.logs.pop();
         render();
-    } catch (e) {
-        document.getElementById('loader').style.display = 'none';
-        render();
     }
-}
 
-async function saveToCloud() {
-    document.getElementById('sync-status').innerText = "☁️ Updating Cloud...";
-    await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
-    document.getElementById('sync-status').innerText = "✅ Live & Secure";
-}
-
-function checkPass(action, index = null) {
-    if (isAdmin) {
-        executeAction(action, index);
-        return;
+    function customAdd(i) {
+        const val = prompt(`Enter custom amount for ${state.friends[i].name}:`);
+        if (val && !isNaN(val)) addMoney(i, val);
     }
-    const p = prompt("Enter Admin Password:");
-    if (p === ADMIN_PASS) {
-        isAdmin = true;
-        localStorage.setItem('isMumbaiAdmin', 'true');
-        executeAction(action, index);
-    } else if (p !== null) {
-        alert("Wrong Password!");
+
+    function logExpense() {
+        const amt = prompt("Amount spent:");
+        const reason = prompt("For what?");
+        if (amt && reason) {
+            state.spent += Number(amt);
+            state.logs.unshift(`💸 SPENT: ₹${amt} for ${reason}`);
+            render();
+        }
     }
-}
 
-function executeAction(action, index) {
-    if (action === 'add') addMoney(index);
-    if (action === 'found') addFound();
-    if (action === 'settings') openModal('settingsModal');
-}
+    function exportData() {
+        const blob = new Blob([JSON.stringify(state)], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Mumbai_Backup_${new Date().toLocaleDateString()}.json`;
+        a.click();
+    }
 
-function logout() {
-    isAdmin = false;
-    localStorage.removeItem('isMumbaiAdmin');
-    alert("Admin Logged Out");
-    location.reload();
-}
+    function importData(e) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            state = JSON.parse(event.target.result);
+            render();
+            alert("Data Loaded!");
+        };
+        reader.readAsText(e.target.files[0]);
+    }
 
-function render() {
-    const today = new Date();
-    const should = getDays(START, today > START ? today : START) * data.dailyGoal;
-    const totalSaved = data.friends.reduce((s,f) => s + f.paid, 0) + data.groupExtra;
-    
-    document.getElementById('days-left').innerText = getDays(today > START ? today : START, DIWALI);
-    document.getElementById('total-val').innerText = "₹" + totalSaved.toLocaleString();
-    document.getElementById('balance-val').innerText = "₹" + totalSaved.toLocaleString();
-
-    let html = "";
-    data.friends.forEach((f, i) => {
-        const diff = f.paid - should;
-        const color = diff < 0 ? 'var(--danger)' : 'var(--success)';
-        html += `<div class="card"><div><b>${f.name}</b> <br> ₹${f.paid} <span style="font-size:0.7em; font-weight:bold; color:${color}">${diff < 0 ? 'Owes: ₹'+Math.abs(diff) : 'Extra: ₹'+diff}</span></div><button class="btn-add" onclick="checkPass('add', ${i})">${isAdmin ? '+' : '🔒'}₹${data.dailyGoal}</button></div>`;
-    });
-    document.getElementById('friend-list').innerHTML = html;
-
-    let mHtml = "";
-    data.friends.forEach((f, i) => {
-        mHtml += `<div style="display:grid; grid-template-columns: 1fr 1fr 40px; gap:5px; margin-bottom:10px;">
-            <input type="text" value="${f.name}" onchange="edit(${i},'name',this.value)">
-            <input type="number" value="${f.paid}" onchange="edit(${i},'paid',this.value)">
-            <button onclick="remove(${i})" style="background:var(--danger); color:white; border-radius:8px;">×</button>
-        </div>`;
-    });
-    document.getElementById('manage-friends-list').innerHTML = mHtml;
-    document.getElementById('history-list').innerHTML = data.history.map(h => `<div style="padding:8px 0; border-bottom:1px solid #2d3748; font-size:0.8em;">${h.msg} <br><small style="opacity:0.4">${h.time}</small></div>`).join('') || "No history.";
-    drawChart();
-}
-
-function getDays(from, to) {
-    let count = 0, cur = new Date(from);
-    while (cur <= to) { if (cur.getDay() !== 0) count++; cur.setDate(cur.getDate() + 1); }
-    return count;
-}
-
-async function addMoney(i) {
-    data.friends[i].paid += data.dailyGoal;
-    logAction(`${data.friends[i].name} +₹${data.dailyGoal}`);
     render();
-    await saveToCloud();
-}
-
-async function addFound() { 
-    let a = prompt("Amount?"); 
-    if(a){ data.groupExtra += Number(a); logAction(`✨ Fund +₹${a}`); render(); await saveToCloud(); } 
-}
-
-function logAction(msg) { 
-    data.history.unshift({msg, time: new Date().toLocaleString([], {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}); 
-    if(data.history.length > 15) data.history.pop(); 
-}
-
-function updateGoal(val) { data.dailyGoal = Number(val); render(); saveToCloud(); }
-async function edit(i, f, v) { if(f==='paid') data.friends[i].paid = Number(v); else data.friends[i].name = v; render(); await saveToCloud(); }
-async function addNewFriend() { data.friends.push({name: "New Friend", paid: 0}); render(); await saveToCloud(); }
-async function remove(i) { if(confirm("Remove?")) { data.friends.splice(i, 1); render(); await saveToCloud(); } }
-function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-function whatsappCommunityShare() {
-    const should = getDays(START, new Date()) * data.dailyGoal;
-    let text = `🚢 *LIVE MUMBAI TRIP UPDATE*\n📅 Days Left: ${document.getElementById('days-left').innerText}\n---------------------------\n`;
-    data.friends.forEach(f => {
-        const diff = f.paid - should;
-        const status = diff < 0 ? ` (Owes: ₹${Math.abs(diff)})` : diff > 0 ? ` (Extra: ₹${diff} 🔥)` : ` (On Track ✅)`;
-        text += `👤 *${f.name}*: ₹${f.paid}${status}\n`;
-    });
-    text += `---------------------------\n💰 *Total Saved: ${document.getElementById('total-val').innerText}*`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
-}
-
-function drawChart() {
-    const ctx = document.getElementById('chart').getContext('2d');
-    if (window.mChart) window.mChart.destroy();
-    window.mChart = new Chart(ctx, { type: 'bar', data: { labels: data.friends.map(f=>f.name), datasets: [{ data: data.friends.map(f=>f.paid), backgroundColor: '#38bdf8', borderRadius: 8 }] }, options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#1e293b'} } } } });
-}
-
-loadFromCloud();
-setInterval(loadFromCloud, 60000);
 </script>
 </body>
 </html>
