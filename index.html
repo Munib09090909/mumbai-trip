@@ -3,236 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumbai Elite 2026 | Games & Sync</title>
+    <title>Mumbai Elite | Pro Gaming Hub</title>
     <style>
-        :root { --bg: #050810; --card: #111827; --primary: #00d2ff; --accent: #9d50bb; --success: #00ff87; --danger: #ff416c; --text: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; overflow-x: hidden; }
-        .container { max-width: 450px; margin: auto; }
+        :root { --bg: #020617; --card: #1e293b; --primary: #38bdf8; --accent: #c084fc; --success: #22c55e; --danger: #ef4444; --gold: #fde047; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding: 10px; overflow-x: hidden; }
         
-        /* Header & Progress */
-        .progress-box { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid #ffffff10; margin-bottom: 20px; }
-        .p-track { background: #1f2937; height: 12px; border-radius: 10px; margin: 15px 0; position: relative; }
-        .p-fill { background: linear-gradient(90deg, var(--primary), var(--accent)); height: 100%; border-radius: 10px; width: 0%; transition: 1.5s; position: relative; }
-        .train { position: absolute; right: -15px; top: -10px; font-size: 1.4em; }
+        /* High-End Header */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(30, 41, 59, 0.5); border-radius: 20px; border: 1px solid #ffffff10; margin-bottom: 20px; }
+        .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-box { background: var(--card); padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #ffffff10; }
+        .stat-box h3 { margin: 5px 0; color: var(--primary); font-size: 1.4em; }
 
-        /* Game Buttons */
-        .game-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-        .btn-game { padding: 18px; border-radius: 18px; border: none; font-weight: 800; color: white; cursor: pointer; transition: 0.3s; font-size: 0.9em; }
-        .bg-spin { background: linear-gradient(45deg, #f093fb, #f5576c); box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4); }
-        .bg-card { background: linear-gradient(45deg, #5ee7df, #b490ca); box-shadow: 0 4px 15px rgba(180, 144, 202, 0.4); }
-        .bg-board { background: linear-gradient(45deg, #30cfd0, #330867); grid-column: span 2; box-shadow: 0 4px 15px rgba(48, 207, 208, 0.4); }
+        /* Game Center Grid */
+        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .game-card { background: var(--card); border-radius: 20px; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 1px solid #ffffff10; cursor: pointer; transition: 0.3s; overflow: hidden; }
+        .game-card:active { transform: scale(0.95); }
+        .game-card.wide { grid-column: span 2; height: 120px; }
+        .game-card img { width: 60px; height: 60px; margin-bottom: 10px; filter: drop-shadow(0 0 10px var(--primary)); }
+        .game-card b { font-size: 0.9em; }
 
-        /* Friend Cards */
-        .friend-card { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #ffffff10; display: flex; justify-content: space-between; align-items: center; }
-        .status-tag { font-size: 0.7em; padding: 3px 8px; border-radius: 6px; font-weight: bold; margin-top: 5px; display: inline-block; }
-        
-        .btn-action { padding: 10px 14px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 5px; }
-        .btn-plus { background: var(--primary); }
-        .btn-custom { background: var(--accent); }
+        /* Lobby / Player Selection */
+        .lobby-box { padding: 20px; text-align: center; }
+        .player-count-btns { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
+        .p-btn { width: 50px; height: 50px; border-radius: 12px; border: 2px solid #ffffff20; background: none; color: white; font-weight: bold; cursor: pointer; }
+        .p-btn.active { border-color: var(--primary); background: rgba(56, 189, 248, 0.2); }
 
-        /* Modals */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px); }
-        .modal-content { background: var(--card); padding: 30px; border-radius: 30px; border: 1px solid var(--primary); width: 85%; max-width: 380px; text-align: center; }
-        
-        /* Board Game UI */
-        .board-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; background: #111; padding: 10px; border-radius: 15px; margin: 15px auto; width: 280px; }
-        .b-cell { height: 50px; background: #1f2937; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; font-size: 0.8em; }
-        .token { width: 12px; height: 12px; border-radius: 50%; position: absolute; border: 2px solid white; transition: 0.5s; }
-        
-        .spin-wheel { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--primary); margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 2em; font-weight: 900; background: #0b0f1a; }
+        /* Mystery Card 4-Grid */
+        .card-spread { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .m-card { height: 140px; background: linear-gradient(135deg, #312e81, #1e1b4b); border-radius: 15px; border: 2px solid var(--accent); position: relative; perspective: 1000px; transform-style: preserve-3d; transition: 0.6s; }
+        .m-card.flip { transform: rotateY(180deg); }
+
+        /* Spin Wheel */
+        .wheel-container { position: relative; width: 250px; height: 250px; margin: 20px auto; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #334155; position: relative; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); background: conic-gradient(var(--danger) 0 90deg, var(--primary) 90deg 180deg, var(--success) 180deg 270deg, var(--gold) 270deg 360deg); }
+        .wheel-pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid white; z-index: 10; }
+
+        /* Board Games */
+        .board-container { width: 340px; height: 340px; margin: auto; background: #0f172a; border: 4px solid #334155; display: grid; grid-template-columns: repeat(10, 1fr); gap: 1px; }
+        .cell { background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 0.6em; position: relative; }
+        .piece { width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; position: absolute; z-index: 5; transition: 0.5s; }
+
+        /* General Modal */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: none; flex-direction: column; z-index: 1000; }
+        .modal-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-main { background: var(--primary); color: #000; padding: 15px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; width: 90%; margin: 20px auto; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h2 style="margin:0; background:linear-gradient(to right, #00d2ff, #9d50bb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">MUMBAI ELITE 2026</h2>
-        <button onclick="checkPass('settings')" style="background:none; border:none; font-size:1.5em; cursor:pointer;">⚙️</button>
-    </div>
+<div class="header">
+    <div><small>EXPECTED</small><br><b id="exp-val">₹...</b></div>
+    <h2 style="margin:0; font-size: 1.2em; color: var(--accent);">MUMBAI ELITE</h2>
+    <button onclick="checkPass('settings')" style="background:none; border:none; font-size:1.5em; cursor:pointer;">⚙️</button>
+</div>
 
-    <div class="progress-box">
-        <div style="display:flex; justify-content:space-between; font-size:0.75em; font-weight:bold; color:var(--primary);">
-            <span>START: KHAMBHAT</span>
-            <span id="expected-label">EXPECTED: ₹...</span>
+<div class="stats-row">
+    <div class="stat-box"><small>TOTAL SAVED</small><h3 id="total-val">₹0</h3></div>
+    <div class="stat-box"><small>DAYS LEFT</small><h3 id="days-left">0</h3></div>
+</div>
+
+<div class="game-grid">
+    <div class="game-card" onclick="openLobby('spin')">
+        <img src="https://img.icons8.com/fluency/96/fortune-wheel.png">
+        <b>LUCKY SPIN</b>
+    </div>
+    <div class="game-card" onclick="openLobby('cards')">
+        <img src="https://img.icons8.com/fluency/96/playing-cards.png">
+        <b>MYSTERY CARDS</b>
+    </div>
+    <div class="game-card wide" onclick="openLobby('ludo')">
+        <img src="https://img.icons8.com/fluency/96/board-game.png">
+        <b>MULTIPLAYER LUDO</b>
+    </div>
+    <div class="game-card wide" onclick="openLobby('snake')">
+        <img src="https://img.icons8.com/fluency/96/snake.png">
+        <b>SNAKE & LADDERS</b>
+    </div>
+</div>
+
+<button class="btn-main" style="background:var(--success); margin-top:0;" onclick="checkPass('found')">✨ ADD GROUP FOUND FUND</button>
+
+<div id="friend-list"></div>
+
+<div class="modal" id="lobbyModal">
+    <div class="modal-header"><h3>GAME LOBBY</h3><button onclick="closeModal('lobbyModal')">❌</button></div>
+    <div class="lobby-box">
+        <h4 id="lobby-game-name">Game Name</h4>
+        <p>Choose Number of Players:</p>
+        <div class="player-count-btns">
+            <button class="p-btn" onclick="setPlayers(2)">2</button>
+            <button class="p-btn active" onclick="setPlayers(3)">3</button>
+            <button class="p-btn" onclick="setPlayers(4)">4</button>
         </div>
-        <div class="p-track"><div class="p-fill" id="p-bar"><span class="train">🚂</span></div></div>
-        <div style="text-align:center; font-size:0.7em; opacity:0.6;" id="p-label">0% reached</div>
+        <div id="online-check" style="margin-top:30px; opacity:0.6;">Checking Friends Online...</div>
+        <button class="btn-main" id="start-btn" onclick="startGame()">START SESSION</button>
     </div>
-
-    <div class="game-row">
-        <button class="btn-game bg-spin" onclick="openModal('spinModal')">🎡 LUCKY SPIN</button>
-        <button class="btn-game bg-card" onclick="openModal('cardModal')">🃏 MYSTERY CARD</button>
-        <button class="btn-game bg-board" onclick="openBoard()">🐍 SNAKE & LADDER (LIVE)</button>
-    </div>
-
-    <button style="background:var(--success); color:#000; width:100%; padding:15px; border-radius:18px; border:none; font-weight:800; margin-bottom:20px;" onclick="checkPass('found')">✨ ADD GROUP FOUND FUND</button>
-
-    <div id="friend-list"></div>
 </div>
 
 <div class="modal" id="spinModal">
-    <div class="modal-content">
-        <h3>WHEEL OF LUCK</h3>
-        <p id="spin-name">Select a friend first</p>
-        <div class="spin-wheel" id="spin-res">?</div>
-        <button class="btn-game bg-spin" style="width:100%;" id="spin-btn" onclick="runSpin()">SPIN NOW</button>
-        <button onclick="closeModal('spinModal')" style="background:none; border:none; color:gray; margin-top:15px;">Exit</button>
+    <div class="modal-header"><h3>LUCKY WHEEL</h3><button onclick="closeModal('spinModal')">❌</button></div>
+    <div class="wheel-container">
+        <div class="wheel-pointer"></div>
+        <div class="wheel" id="wheel-obj"></div>
     </div>
+    <button class="btn-main" onclick="spinNow()">SPIN WHEEL</button>
 </div>
 
 <div class="modal" id="cardModal">
-    <div class="modal-content">
-        <h3>CHOOSE A CARD</h3>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
-            <div onclick="revealCard(this)" style="background:var(--accent); height:100px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:2em;">❓</div>
-            <div onclick="revealCard(this)" style="background:var(--accent); height:100px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:2em;">❓</div>
-        </div>
-        <button onclick="closeModal('cardModal')" style="background:none; border:none; color:gray; margin-top:20px;">Close</button>
-    </div>
-</div>
-
-<div class="modal" id="boardModal">
-    <div style="text-align:center;">
-        <h3 style="color:var(--primary);">MULTIPLAYER BOARD</h3>
-        <div class="board-grid" id="board-grid"></div>
-        <div id="turn-txt" style="font-weight:bold; margin-bottom:10px;">Turn: ---</div>
-        <button class="btn-game bg-board" style="width:200px;" onclick="rollBoard()">🎲 ROLL DICE</button>
-        <button onclick="closeModal('boardModal')" style="background:none; border:none; color:white; margin-top:15px;">EXIT</button>
-    </div>
-</div>
-
-<div class="modal" id="adminModal">
-    <div class="modal-content">
-        <h3>ADMIN PANEL</h3>
-        <div id="admin-list"></div>
-        <button class="btn-game bg-spin" style="width:100%; margin-top:15px;" onclick="exportData()">💾 BACKUP DATA</button>
-        <button class="btn-game bg-board" style="width:100%; margin-top:10px;" onclick="closeModal('adminModal')">SAVE & SYNC</button>
+    <div class="modal-header"><h3>CHOOSE 1 OF 4</h3><button onclick="closeModal('cardModal')">❌</button></div>
+    <div class="card-spread">
+        <div class="m-card" onclick="flipCard(this)"></div>
+        <div class="m-card" onclick="flipCard(this)"></div>
+        <div class="m-card" onclick="flipCard(this)"></div>
+        <div class="m-card" onclick="flipCard(this)"></div>
     </div>
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzJwspa9tNV3D2mPwxN7JNRFmI0SbjKE9-VltIBKznochvAK59QADkbweQXEWyUezgS0w/exec";
+const API_URL = "YOUR_APPS_SCRIPT_URL";
 const ADMIN_PASS = "1234";
-const START_DATE = new Date("2026-03-24");
+let state = { friends: [], groupExtra: 0, dailyGoal: 20 };
+let currentGame = '';
+let playerCount = 3;
 
-let state = { friends: [], groupExtra: 0, dailyGoal: 20, turnIdx: 0 };
-let activeIdx = 0;
-
+// --- CORE SYNC ---
 async function sync() {
     try {
         const res = await fetch(API_URL);
-        const cloud = await res.json();
-        if(cloud.friends) state = cloud;
+        const data = await res.json();
+        if(data.friends) state = data;
         render();
-    } catch(e) { render(); }
-}
-
-async function save() {
-    await fetch(API_URL, { method: 'POST', body: JSON.stringify(state) });
-    render();
-}
-
-function getExpected() {
-    let count = 0, cur = new Date(START_DATE), today = new Date();
-    while(cur <= today) { if(cur.getDay()!==0) count++; cur.setDate(cur.getDate()+1); }
-    return count * (state.dailyGoal || 20);
+    } catch(e) { console.error("Sync Error"); }
 }
 
 function render() {
-    const exp = getExpected();
-    const total = (state.friends || []).reduce((s,f)=>s+(f.paid||0), 0) + (state.groupExtra||0);
-    const gExp = exp * (state.friends?.length || 4);
-    const perc = Math.min((total/gExp)*100, 100).toFixed(1);
+    const exp = calculateExpected();
+    document.getElementById('exp-val').innerText = "₹" + exp;
+    document.getElementById('total-val').innerText = "₹" + state.friends.reduce((s,f)=>s+(f.paid||0),0);
     
-    document.getElementById('expected-label').innerText = "EXPECTED: ₹" + exp;
-    document.getElementById('p-bar').style.width = perc + "%";
-    document.getElementById('p-label').innerText = `Group is at ${perc}% of target`;
-
     let html = "";
-    let aHtml = "";
     state.friends.forEach((f, i) => {
-        const diff = (f.paid||0) - exp;
-        const sClass = diff < 0 ? 'background:rgba(255,65,108,0.2);color:var(--danger)' : 'background:rgba(0,255,135,0.2);color:var(--success)';
-        html += `<div class="friend-card" onclick="activeIdx=${i}; document.getElementById('spin-name').innerText='Playing for ${f.name}';">
-            <div><b>${f.name}</b><br><span class="status-tag" style="${sClass}">${diff<0?'Owes':'Extra'} ₹${Math.abs(diff)}</span></div>
-            <div style="text-align:right">
-                <div style="font-weight:bold;color:var(--primary);font-size:1.1em;">₹${f.paid||0}</div>
-                <div style="margin-top:5px;">
-                    <button class="btn-action btn-plus" onclick="checkPass('add',${i})">+₹${state.dailyGoal}</button>
-                    <button class="btn-action btn-custom" onclick="checkPass('custom',${i})">➕ Custom</button>
-                </div>
-            </div>
+        html += `<div class="stat-box" style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="text-align:left;"><b>${f.name}</b><br><small>Paid: ₹${f.paid||0}</small></div>
+            <button onclick="checkPass('add',${i})" style="background:var(--primary); border:none; padding:8px 15px; border-radius:10px; font-weight:bold;">+₹20</button>
         </div>`;
-        aHtml += `<input type="text" value="${f.name}" onchange="state.friends[${i}].name=this.value">`;
     });
     document.getElementById('friend-list').innerHTML = html;
-    document.getElementById('admin-list').innerHTML = aHtml;
 }
 
-// Games
-function runSpin() {
-    let f = state.friends[activeIdx], win = [10, 20, 30, 40][Math.floor(Math.random()*4)];
-    document.getElementById('spin-btn').disabled = true;
-    let count = 0, itv = setInterval(() => {
-        document.getElementById('spin-res').innerText = "₹" + Math.floor(Math.random()*50);
-        if(count++ > 20) { clearInterval(itv); document.getElementById('spin-res').innerText = "₹"+win; f.paid += win; save(); document.getElementById('spin-btn').disabled = false; }
-    }, 50);
+function calculateExpected() {
+    let start = new Date("2026-03-24"), count = 0, cur = new Date();
+    while(start <= cur) { if(start.getDay()!==0) count++; start.setDate(start.getDate()+1); }
+    return count * state.dailyGoal;
 }
 
-function revealCard(el) {
-    let f = state.friends[activeIdx], win = [20, 40, 50, 100][Math.floor(Math.random()*4)];
-    el.innerHTML = "₹" + win; el.style.background = "var(--success)";
-    setTimeout(() => { f.paid += win; save(); closeModal('cardModal'); el.innerHTML = "❓"; el.style.background="var(--accent)"; }, 1000);
+// --- LOBBY LOGIC ---
+function openLobby(game) {
+    currentGame = game;
+    document.getElementById('lobby-game-name').innerText = game.toUpperCase();
+    document.getElementById('lobbyModal').style.display = 'flex';
 }
 
-function openBoard() {
-    openModal('boardModal');
-    const g = document.getElementById('board-grid'); g.innerHTML = "";
-    for(let i=25; i>=1; i--) g.innerHTML += `<div class="b-cell" id="c-${i}">${i}</div>`;
-    updateTokens();
+function setPlayers(n) {
+    playerCount = n;
+    document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
 }
 
-function rollBoard() {
-    let f = state.friends[state.turnIdx], roll = Math.floor(Math.random()*6)+1;
-    alert(f.name + " rolled " + roll);
-    f.pos = (f.pos || 0) + roll;
-    if(f.pos >= 25) f.pos = 25;
-    state.turnIdx = (state.turnIdx + 1) % state.friends.length;
-    updateTokens(); save();
+function startGame() {
+    closeModal('lobbyModal');
+    if(currentGame === 'spin') openModal('spinModal');
+    if(currentGame === 'cards') openModal('cardModal');
 }
 
-function updateTokens() {
-    document.querySelectorAll('.token').forEach(t=>t.remove());
-    state.friends.forEach((f,i) => {
-        if(f.pos > 0) {
-            let cell = document.getElementById('c-'+f.pos);
-            let t = document.createElement('div'); t.className='token';
-            t.style.background = ['#ff416c','#00d2ff','#00ff87','#fcc21b'][i];
-            t.style.bottom = (i*3)+"px"; cell.appendChild(t);
-        }
-    });
-    document.getElementById('turn-txt').innerText = "Turn: " + state.friends[state.turnIdx].name;
+// --- SPIN LOGIC ---
+let isSpinning = false;
+function spinNow() {
+    if(isSpinning) return;
+    isSpinning = true;
+    const deg = 1800 + Math.floor(Math.random() * 360);
+    document.getElementById('wheel-obj').style.transform = `rotate(${deg}deg)`;
+    setTimeout(() => {
+        alert("🎉 You won a bonus ₹20 for your savings!");
+        isSpinning = false;
+    }, 4000);
 }
 
-function checkPass(a, i) {
-    let p = prompt("Admin Pass:");
-    if(p===ADMIN_PASS) {
-        if(a==='add') { state.friends[i].paid += state.dailyGoal; save(); }
-        if(a==='custom') { let v = prompt("Amount?"); if(v) { state.friends[i].paid += Number(v); save(); } }
-        if(a==='found') { let v = prompt("Found Amount?"); if(v) { state.groupExtra += Number(v); save(); } }
-        if(a==='settings') openModal('adminModal');
-    }
+// --- CARD LOGIC ---
+function flipCard(el) {
+    if(el.classList.contains('flip')) return;
+    el.classList.add('flip');
+    el.innerHTML = `<div style="transform:rotateY(180deg); display:flex; align-items:center; justify-content:center; height:100%; font-weight:bold; font-size:1.5em; color:var(--gold);">₹50</div>`;
+    setTimeout(() => alert("Extra ₹50 Added!"), 500);
 }
 
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-function exportData() {
-    const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-    a.download = `Backup.json`; a.click();
-}
 
 sync();
-setInterval(sync, 30000);
 </script>
 </body>
 </html>
