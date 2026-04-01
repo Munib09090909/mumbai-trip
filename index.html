@@ -3,46 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumbai Elite 2026 | Master</title>
+    <title>Mumbai Elite 2026 | Games & Sync</title>
     <style>
         :root { --bg: #050810; --card: #111827; --primary: #00d2ff; --accent: #9d50bb; --success: #00ff87; --danger: #ff416c; --text: #ffffff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; overflow-x: hidden; }
         .container { max-width: 450px; margin: auto; }
         
         /* Header & Progress */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .progress-box { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid #ffffff10; margin-bottom: 20px; }
         .p-track { background: #1f2937; height: 12px; border-radius: 10px; margin: 15px 0; position: relative; }
         .p-fill { background: linear-gradient(90deg, var(--primary), var(--accent)); height: 100%; border-radius: 10px; width: 0%; transition: 1.5s; position: relative; }
-        .train { position: absolute; right: -15px; top: -10px; font-size: 1.4em; text-shadow: 0 0 10px var(--primary); }
+        .train { position: absolute; right: -15px; top: -10px; font-size: 1.4em; }
 
-        /* Stats Grid */
-        .main-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-card { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid #ffffff10; text-align: center; }
-        .stat-card h2 { margin: 5px 0; color: var(--primary); font-size: 1.6em; text-shadow: 0 0 8px var(--primary); }
-
-        /* Buttons */
-        .btn-fund { background: var(--success); color: #000; width: 100%; padding: 14px; border-radius: 15px; margin-bottom: 15px; font-weight: 800; border:none; cursor: pointer; }
-        .btn-action { padding: 8px 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; color: white; font-size: 0.8em; margin-left: 5px; }
-        .btn-plus { background: var(--primary); }
-        .btn-custom { background: var(--accent); }
+        /* Game Buttons */
+        .game-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .btn-game { padding: 18px; border-radius: 18px; border: none; font-weight: 800; color: white; cursor: pointer; transition: 0.3s; font-size: 0.9em; }
+        .bg-spin { background: linear-gradient(45deg, #f093fb, #f5576c); box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4); }
+        .bg-card { background: linear-gradient(45deg, #5ee7df, #b490ca); box-shadow: 0 4px 15px rgba(180, 144, 202, 0.4); }
+        .bg-board { background: linear-gradient(45deg, #30cfd0, #330867); grid-column: span 2; box-shadow: 0 4px 15px rgba(48, 207, 208, 0.4); }
 
         /* Friend Cards */
         .friend-card { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #ffffff10; display: flex; justify-content: space-between; align-items: center; }
-        .friend-info b { font-size: 1.1em; display: block; }
-        .friend-info small { color: #6b7280; font-size: 0.75em; }
-        .status-tag { font-size: 0.7em; padding: 2px 6px; border-radius: 5px; font-weight: bold; margin-top: 4px; display: inline-block; }
+        .status-tag { font-size: 0.7em; padding: 3px 8px; border-radius: 6px; font-weight: bold; margin-top: 5px; display: inline-block; }
         
+        .btn-action { padding: 10px 14px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; color: white; margin-left: 5px; }
+        .btn-plus { background: var(--primary); }
+        .btn-custom { background: var(--accent); }
+
         /* Modals */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(10px); }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 30px; border: 1px solid var(--primary); width: 85%; max-width: 380px; }
-        input { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 10px; width: 100%; margin: 10px 0; box-sizing: border-box; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px); }
+        .modal-content { background: var(--card); padding: 30px; border-radius: 30px; border: 1px solid var(--primary); width: 85%; max-width: 380px; text-align: center; }
+        
+        /* Board Game UI */
+        .board-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; background: #111; padding: 10px; border-radius: 15px; margin: 15px auto; width: 280px; }
+        .b-cell { height: 50px; background: #1f2937; border-radius: 6px; display: flex; align-items: center; justify-content: center; position: relative; font-size: 0.8em; }
+        .token { width: 12px; height: 12px; border-radius: 50%; position: absolute; border: 2px solid white; transition: 0.5s; }
+        
+        .spin-wheel { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--primary); margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 2em; font-weight: 900; background: #0b0f1a; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <h2 style="margin:0; background:linear-gradient(to right, #00d2ff, #9d50bb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">MUMBAI ELITE 2026</h2>
         <button onclick="checkPass('settings')" style="background:none; border:none; font-size:1.5em; cursor:pointer;">⚙️</button>
     </div>
@@ -53,28 +56,57 @@
             <span id="expected-label">EXPECTED: ₹...</span>
         </div>
         <div class="p-track"><div class="p-fill" id="p-bar"><span class="train">🚂</span></div></div>
-        <div style="text-align:center; font-size:0.7em; opacity:0.6;" id="p-label">Calculation Live...</div>
+        <div style="text-align:center; font-size:0.7em; opacity:0.6;" id="p-label">0% reached</div>
     </div>
 
-    <div class="main-stats">
-        <div class="stat-card"><small>TOTAL SAVED</small><h2 id="total-val">₹0</h2></div>
-        <div class="stat-card"><small>DAYS LEFT</small><h2 id="days-left">0</h2></div>
+    <div class="game-row">
+        <button class="btn-game bg-spin" onclick="openModal('spinModal')">🎡 LUCKY SPIN</button>
+        <button class="btn-game bg-card" onclick="openModal('cardModal')">🃏 MYSTERY CARD</button>
+        <button class="btn-game bg-board" onclick="openBoard()">🐍 SNAKE & LADDER (LIVE)</button>
     </div>
 
-    <button class="btn-fund" onclick="checkPass('found')">✨ ADD GROUP FOUND FUND</button>
+    <button style="background:var(--success); color:#000; width:100%; padding:15px; border-radius:18px; border:none; font-weight:800; margin-bottom:20px;" onclick="checkPass('found')">✨ ADD GROUP FOUND FUND</button>
 
     <div id="friend-list"></div>
 </div>
 
+<div class="modal" id="spinModal">
+    <div class="modal-content">
+        <h3>WHEEL OF LUCK</h3>
+        <p id="spin-name">Select a friend first</p>
+        <div class="spin-wheel" id="spin-res">?</div>
+        <button class="btn-game bg-spin" style="width:100%;" id="spin-btn" onclick="runSpin()">SPIN NOW</button>
+        <button onclick="closeModal('spinModal')" style="background:none; border:none; color:gray; margin-top:15px;">Exit</button>
+    </div>
+</div>
+
+<div class="modal" id="cardModal">
+    <div class="modal-content">
+        <h3>CHOOSE A CARD</h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
+            <div onclick="revealCard(this)" style="background:var(--accent); height:100px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:2em;">❓</div>
+            <div onclick="revealCard(this)" style="background:var(--accent); height:100px; border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:2em;">❓</div>
+        </div>
+        <button onclick="closeModal('cardModal')" style="background:none; border:none; color:gray; margin-top:20px;">Close</button>
+    </div>
+</div>
+
+<div class="modal" id="boardModal">
+    <div style="text-align:center;">
+        <h3 style="color:var(--primary);">MULTIPLAYER BOARD</h3>
+        <div class="board-grid" id="board-grid"></div>
+        <div id="turn-txt" style="font-weight:bold; margin-bottom:10px;">Turn: ---</div>
+        <button class="btn-game bg-board" style="width:200px;" onclick="rollBoard()">🎲 ROLL DICE</button>
+        <button onclick="closeModal('boardModal')" style="background:none; border:none; color:white; margin-top:15px;">EXIT</button>
+    </div>
+</div>
+
 <div class="modal" id="adminModal">
     <div class="modal-content">
-        <h3 style="text-align:center;">⚙️ ADMIN PANEL</h3>
-        <label style="font-size:0.8em; opacity:0.7;">Daily Goal Per Person (₹):</label>
-        <input type="number" id="daily-inp" onchange="updateDaily(this.value)">
-        <hr style="opacity:0.1; margin:15px 0;">
+        <h3>ADMIN PANEL</h3>
         <div id="admin-list"></div>
-        <button class="btn-fund" style="margin-top:20px;" onclick="exportData()">💾 BACKUP DATA</button>
-        <button class="btn-fund" style="background:var(--danger);" onclick="closeModal('adminModal')">CLOSE & SYNC</button>
+        <button class="btn-game bg-spin" style="width:100%; margin-top:15px;" onclick="exportData()">💾 BACKUP DATA</button>
+        <button class="btn-game bg-board" style="width:100%; margin-top:10px;" onclick="closeModal('adminModal')">SAVE & SYNC</button>
     </div>
 </div>
 
@@ -82,29 +114,9 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzJwspa9tNV3D2mPwxN7JNRFmI0SbjKE9-VltIBKznochvAK59QADkbweQXEWyUezgS0w/exec";
 const ADMIN_PASS = "1234";
 const START_DATE = new Date("2026-03-24");
-const DIWALI_DATE = new Date("2026-11-08");
 
-let state = {
-    friends: [
-        {name: "Munib", paid: 0}, {name: "Nadim", paid: 0}, 
-        {name: "Ruhan", paid: 0}, {name: "Friend 4", paid: 0}
-    ],
-    groupExtra: 0,
-    dailyGoal: 20
-};
-
-// Calculate how many non-Sundays have passed until today
-function getExpectedPerPerson() {
-    let today = new Date();
-    if (today < START_DATE) return 0;
-    let count = 0;
-    let cur = new Date(START_DATE);
-    while(cur <= today && cur <= DIWALI_DATE) {
-        if(cur.getDay() !== 0) count++;
-        cur.setDate(cur.getDate() + 1);
-    }
-    return count * (state.dailyGoal || 20);
-}
+let state = { friends: [], groupExtra: 0, dailyGoal: 20, turnIdx: 0 };
+let activeIdx = 0;
 
 async function sync() {
     try {
@@ -120,85 +132,107 @@ async function save() {
     render();
 }
 
-function render() {
-    const expected = getExpectedPerPerson();
-    const total = state.friends.reduce((s,f) => s + (f.paid || 0), 0) + (state.groupExtra || 0);
-    const groupExpected = expected * state.friends.length;
-    const perc = Math.min((total / groupExpected) * 100, 100).toFixed(1);
-    
-    document.getElementById('expected-label').innerText = "EXPECTED: ₹" + expected.toLocaleString();
-    document.getElementById('total-val').innerText = "₹" + total.toLocaleString();
-    document.getElementById('p-bar').style.width = isNaN(perc) ? "0%" : perc + "%";
-    document.getElementById('p-label').innerText = `Group is at ${perc}% of current expected target`;
-    document.getElementById('daily-inp').value = state.dailyGoal || 20;
+function getExpected() {
+    let count = 0, cur = new Date(START_DATE), today = new Date();
+    while(cur <= today) { if(cur.getDay()!==0) count++; cur.setDate(cur.getDate()+1); }
+    return count * (state.dailyGoal || 20);
+}
 
-    const diffDays = Math.max(0, Math.floor((DIWALI_DATE - new Date())/(1000*60*60*24)));
-    document.getElementById('days-left').innerText = diffDays;
+function render() {
+    const exp = getExpected();
+    const total = (state.friends || []).reduce((s,f)=>s+(f.paid||0), 0) + (state.groupExtra||0);
+    const gExp = exp * (state.friends?.length || 4);
+    const perc = Math.min((total/gExp)*100, 100).toFixed(1);
+    
+    document.getElementById('expected-label').innerText = "EXPECTED: ₹" + exp;
+    document.getElementById('p-bar').style.width = perc + "%";
+    document.getElementById('p-label').innerText = `Group is at ${perc}% of target`;
 
     let html = "";
     let aHtml = "";
     state.friends.forEach((f, i) => {
-        const personalDiff = (f.paid || 0) - expected;
-        const statusClass = personalDiff < 0 ? 'background:rgba(248,113,113,0.2); color:#f87171;' : 'background:rgba(74,222,128,0.2); color:#4ade80;';
-        const statusText = personalDiff < 0 ? `Owes ₹${Math.abs(personalDiff)}` : `Extra ₹${personalDiff}`;
-
-        html += `
-        <div class="friend-card">
-            <div class="friend-info">
-                <b>${f.name}</b>
-                <div class="status-tag" style="${statusClass}">${statusText}</div>
-            </div>
-            <div style="text-align:right;">
-                <div style="color:var(--primary); font-weight:bold; font-size:1.2em;">₹${f.paid || 0}</div>
-                <div style="margin-top:8px;">
-                    <button class="btn-action btn-plus" onclick="checkPass('add', ${i})">+₹${state.dailyGoal}</button>
-                    <button class="btn-action btn-custom" onclick="checkPass('custom', ${i})">➕ Custom</button>
+        const diff = (f.paid||0) - exp;
+        const sClass = diff < 0 ? 'background:rgba(255,65,108,0.2);color:var(--danger)' : 'background:rgba(0,255,135,0.2);color:var(--success)';
+        html += `<div class="friend-card" onclick="activeIdx=${i}; document.getElementById('spin-name').innerText='Playing for ${f.name}';">
+            <div><b>${f.name}</b><br><span class="status-tag" style="${sClass}">${diff<0?'Owes':'Extra'} ₹${Math.abs(diff)}</span></div>
+            <div style="text-align:right">
+                <div style="font-weight:bold;color:var(--primary);font-size:1.1em;">₹${f.paid||0}</div>
+                <div style="margin-top:5px;">
+                    <button class="btn-action btn-plus" onclick="checkPass('add',${i})">+₹${state.dailyGoal}</button>
+                    <button class="btn-action btn-custom" onclick="checkPass('custom',${i})">➕ Custom</button>
                 </div>
             </div>
         </div>`;
-        
-        aHtml += `<div style="margin-bottom:10px; display:flex; gap:5px;">
-            <input type="text" value="${f.name}" style="flex:2;" onchange="state.friends[${i}].name=this.value">
-            <input type="number" value="${f.paid || 0}" style="flex:1;" onchange="state.friends[${i}].paid=Number(this.value)">
-        </div>`;
+        aHtml += `<input type="text" value="${f.name}" onchange="state.friends[${i}].name=this.value">`;
     });
-    
-    document.getElementById('friend-list').innerHTML = html + `
-        <div class="friend-card" style="border:1px dashed var(--success); opacity:0.8;">
-            <div class="friend-info"><b>✨ Group Found Fund</b><small>Shared extra money</small></div>
-            <div style="color:var(--success); font-weight:bold; font-size:1.2em;">₹${state.groupExtra || 0}</div>
-        </div>`;
+    document.getElementById('friend-list').innerHTML = html;
     document.getElementById('admin-list').innerHTML = aHtml;
 }
 
-function checkPass(act, idx) {
-    const p = prompt("Enter Admin Password:");
-    if(p === ADMIN_PASS) {
-        if(act === 'add') { state.friends[idx].paid = (state.friends[idx].paid || 0) + (state.dailyGoal || 20); save(); }
-        if(act === 'custom') { 
-            let amt = prompt(`Enter custom amount to add for ${state.friends[idx].name}:`);
-            if(amt && !isNaN(amt)) { state.friends[idx].paid = (state.friends[idx].paid || 0) + Number(amt); save(); }
-        }
-        if(act === 'found') { 
-            let amt = prompt("How much extra group money found?");
-            if(amt && !isNaN(amt)) { state.groupExtra = (state.groupExtra || 0) + Number(amt); save(); }
-        }
-        if(act === 'settings') openModal('adminModal');
-    } else if (p !== null) { alert("Wrong Password!"); }
+// Games
+function runSpin() {
+    let f = state.friends[activeIdx], win = [10, 20, 30, 40][Math.floor(Math.random()*4)];
+    document.getElementById('spin-btn').disabled = true;
+    let count = 0, itv = setInterval(() => {
+        document.getElementById('spin-res').innerText = "₹" + Math.floor(Math.random()*50);
+        if(count++ > 20) { clearInterval(itv); document.getElementById('spin-res').innerText = "₹"+win; f.paid += win; save(); document.getElementById('spin-btn').disabled = false; }
+    }, 50);
 }
 
-function updateDaily(val) { state.dailyGoal = Number(val); render(); }
-function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; save(); }
+function revealCard(el) {
+    let f = state.friends[activeIdx], win = [20, 40, 50, 100][Math.floor(Math.random()*4)];
+    el.innerHTML = "₹" + win; el.style.background = "var(--success)";
+    setTimeout(() => { f.paid += win; save(); closeModal('cardModal'); el.innerHTML = "❓"; el.style.background="var(--accent)"; }, 1000);
+}
 
+function openBoard() {
+    openModal('boardModal');
+    const g = document.getElementById('board-grid'); g.innerHTML = "";
+    for(let i=25; i>=1; i--) g.innerHTML += `<div class="b-cell" id="c-${i}">${i}</div>`;
+    updateTokens();
+}
+
+function rollBoard() {
+    let f = state.friends[state.turnIdx], roll = Math.floor(Math.random()*6)+1;
+    alert(f.name + " rolled " + roll);
+    f.pos = (f.pos || 0) + roll;
+    if(f.pos >= 25) f.pos = 25;
+    state.turnIdx = (state.turnIdx + 1) % state.friends.length;
+    updateTokens(); save();
+}
+
+function updateTokens() {
+    document.querySelectorAll('.token').forEach(t=>t.remove());
+    state.friends.forEach((f,i) => {
+        if(f.pos > 0) {
+            let cell = document.getElementById('c-'+f.pos);
+            let t = document.createElement('div'); t.className='token';
+            t.style.background = ['#ff416c','#00d2ff','#00ff87','#fcc21b'][i];
+            t.style.bottom = (i*3)+"px"; cell.appendChild(t);
+        }
+    });
+    document.getElementById('turn-txt').innerText = "Turn: " + state.friends[state.turnIdx].name;
+}
+
+function checkPass(a, i) {
+    let p = prompt("Admin Pass:");
+    if(p===ADMIN_PASS) {
+        if(a==='add') { state.friends[i].paid += state.dailyGoal; save(); }
+        if(a==='custom') { let v = prompt("Amount?"); if(v) { state.friends[i].paid += Number(v); save(); } }
+        if(a==='found') { let v = prompt("Found Amount?"); if(v) { state.groupExtra += Number(v); save(); } }
+        if(a==='settings') openModal('adminModal');
+    }
+}
+
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function exportData() {
-    const a = document.createElement('a');
-    a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-    a.download = `Mumbai_Trip_Backup.json`; a.click();
+    const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+    a.download = `Backup.json`; a.click();
 }
 
 sync();
-setInterval(sync, 30000); // Auto-refresh every 30 seconds
+setInterval(sync, 30000);
 </script>
 </body>
 </html>
