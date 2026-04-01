@@ -1,205 +1,278 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumbai Elite 2026 | Smart Admin</title>
+    <title>Mumbai Trip 2026 | Smart Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0b0f1a; --card: #161c2d; --primary: #38bdf8; --success: #4ade80; --danger: #f87171; --text: #f8fafc; --accent: #818cf8; --gold: #fde047; }
+        :root { --bg: #0b0f1a; --card: #161c2d; --primary: #38bdf8; --success: #4ade80; --danger: #f87171; --text: #f8fafc; --accent: #818cf8; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; padding-bottom: 100px; }
         .container { max-width: 450px; margin: auto; }
-        
-        /* Header & Stats */
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; transition: 0.5s; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .stat-card { background: var(--card); padding: 20px; border-radius: 18px; text-align: center; border: 1px solid #2d3748; margin-bottom: 15px; }
-        .days-box { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 15px; border-radius: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #334155; }
-
-        /* Game Center Grid */
-        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .game-card { background: var(--card); border-radius: 20px; height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #ffffff10; cursor: pointer; transition: 0.3s; }
-        .game-card:active { transform: scale(0.95); }
-        .game-icon { font-size: 2.2em; filter: drop-shadow(0 0 10px var(--primary)); }
-
-        /* Friend Cards */
+        .settings-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; }
+        .days-box { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #334155; }
+        .stats-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 15px; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 18px; text-align: center; border: 1px solid #2d3748; }
         .card { background: var(--card); padding: 16px; margin-bottom: 12px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d3748; }
-        .btn-add { background: var(--primary); color: white; padding: 10px 15px; border-radius: 12px; border:none; font-weight:600; cursor:pointer; }
-        .btn-custom { background: var(--accent); color: white; padding: 10px 15px; border-radius: 12px; border:none; margin-left:5px; cursor:pointer; }
-        
-        /* Modals & Games */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
-        .wheel-box { position: relative; width: 260px; height: 260px; margin: 20px auto; }
-        .wheel-canvas { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #334155; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); background: conic-gradient(var(--danger) 0% 25%, var(--primary) 25% 50%, var(--success) 50% 75%, var(--gold) 75% 100%); }
-        .pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid white; z-index: 10; }
-        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 85%; }
-        .m-card { height: 130px; background: #1e1b4b; border-radius: 15px; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 2em; cursor: pointer; transition: 0.6s; transform-style: preserve-3d; }
-        .m-card.flip { transform: rotateY(180deg); background: var(--success); }
-
-        .btn-share { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; background: #25D366; color: white; padding: 15px; border-radius: 15px; border:none; font-weight:bold; z-index:100; }
+        button { border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-add { background: var(--primary); color: white; padding: 10px 15px; margin-left: 5px; }
+        .btn-custom { background: var(--accent); color: white; padding: 10px 15px; margin-left: 5px; }
+        .btn-group { background: var(--success); color: white; width: 100%; padding: 14px; margin-bottom: 20px; }
+        .btn-share { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #25D366; color: white; padding: 15px; font-size: 1.1em; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 24px; width: 85%; max-width: 380px; border: 1px solid #334155; max-height: 85vh; overflow-y: auto; }
+        input { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; margin: 8px 0; box-sizing: border-box; }
+        .sync-indicator { font-size: 0.6em; text-align: center; opacity: 0.5; margin-bottom: 10px; }
+        hr { border: 0.5px solid #334155; margin: 15px 0; }
     </style>
 </head>
 <body>
 
+<div id="loader" class="loading-overlay">
+    <h2 style="color:var(--primary);">🚢 Mumbai Trip 2026</h2>
+    <p>Loading Live Group Data...</p>
+</div>
+
 <div class="container">
     <div class="header">
         <h2 style="margin:0;">🚢 Mumbai Live</h2>
-        <button onclick="checkPass('settings')" style="background:#1e293b; color:white; border-radius:12px; padding:8px 12px; border:1px solid #334155;">⚙️ Admin</button>
+        <button class="settings-btn" onclick="checkPass('settings')">⚙️ Admin</button>
     </div>
+
+    <div class="sync-indicator" id="sync-status">Connected & Secure</div>
 
     <div class="days-box">
-        <span style="font-size: 2.2em; font-weight: 800; color: var(--primary);" id="days-left">0</span><br>
-        <span style="opacity: 0.6; text-transform: uppercase; font-size: 0.7em;">Days till Diwali</span>
+        <span style="font-size: 2.5em; font-weight: 800; color: var(--primary);" id="days-left">0</span><br>
+        <span style="opacity: 0.6; text-transform: uppercase; font-size: 0.7em;">Days Left till Diwali</span>
     </div>
 
-    <div class="stat-card">
-        <small style="opacity:0.6; letter-spacing:1px;">TOTAL SAVINGS</small>
-        <span id="total-val" style="display:block; font-size:2em; font-weight:bold; color:var(--primary);">₹0</span>
+    <div class="stats-row">
+        <div class="stat-card">
+            <small style="opacity:0.6; text-transform:uppercase; letter-spacing:1px;">Total Group Savings</small>
+            <span id="total-val" style="display:block; font-size:2.2em; font-weight:bold; color:var(--primary);">₹0</span>
+        </div>
     </div>
 
-    <div class="game-grid">
-        <div class="game-card" onclick="openModal('spinModal')"><span class="game-icon">🎡</span><b>LUCKY SPIN</b></div>
-        <div class="game-card" onclick="openModal('cardModal')"><span class="game-icon">🃏</span><b>MYSTERY CARD</b></div>
-    </div>
-
-    <button style="background:var(--success); color:white; width:100%; padding:15px; border-radius:15px; border:none; font-weight:bold; margin-bottom:20px;" onclick="checkPass('found')">✨ Add Group Fund</button>
-    
+    <button class="btn-group" onclick="checkPass('found')">✨ Add Group Found Money</button>
     <div id="friend-list"></div>
 
     <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px; border:1px solid #2d3748;"></canvas>
-
-    <div style="text-align:center; margin-top:20px;">
-        <button style="background:none; color:var(--primary); border:none;" onclick="openModal('historyModal')">📜 View History</button>
+    
+    <div style="text-align: center; margin: 20px 0;">
+        <button class="settings-btn" style="color:var(--primary);" onclick="openModal('historyModal')">📜 View History</button>
+        <br><br>
+        <button style="background:none; color:var(--danger); opacity:0.3; font-size:0.6em;" onclick="logout()">Logout Admin</button>
     </div>
 </div>
 
-<div class="modal" id="spinModal">
-    <h2 style="color:var(--primary)">LUCKY WHEEL</h2>
-    <div class="wheel-box"><div class="pointer"></div><div class="wheel-canvas" id="wheel"></div></div>
-    <button class="btn-add" style="width:200px; padding:15px;" onclick="startSpin()">SPIN NOW</button>
-    <button onclick="closeModal('spinModal')" style="background:none; color:gray; border:none; margin-top:20px;">CLOSE</button>
-</div>
-
-<div class="modal" id="cardModal">
-    <h2 style="color:var(--accent)">CHOOSE 1 OF 4</h2>
-    <div class="card-grid">
-        <div class="m-card" onclick="flip(this)">❓</div><div class="m-card" onclick="flip(this)">❓</div>
-        <div class="m-card" onclick="flip(this)">❓</div><div class="m-card" onclick="flip(this)">❓</div>
+<div class="modal" id="settingsModal">
+    <div class="modal-content">
+        <h3>⚙️ Admin Panel</h3>
+        <button class="btn-group" style="background:var(--accent); margin-bottom:15px;" onclick="runFutureCalc()">🔮 Future Savings Calculator</button>
+        
+        <label>Daily Goal (₹):</label>
+        <input type="number" id="daily-target" value="20" onchange="updateGoal(this.value)">
+        
+        <hr>
+        <div id="manage-friends-list"></div>
+        <button class="btn-add" style="width:100%; background:var(--success); margin: 10px 0;" onclick="addNewFriend()">+ Add Friend</button>
+        
+        <hr>
+        <button class="settings-btn" style="width:100%; margin-bottom:10px;" onclick="exportData()">💾 Backup to File</button>
+        <label class="settings-btn" style="display:block; text-align:center; margin-bottom:10px;">
+            📂 Import Backup File <input type="file" onchange="importData(event)">
+        </label>
+        
+        <button class="btn-add" style="width:100%; background:var(--danger);" onclick="closeModal('settingsModal')">Close & Sync</button>
     </div>
-    <button onclick="closeModal('cardModal')" style="background:none; color:gray; border:none; margin-top:20px;">CLOSE</button>
 </div>
 
 <div class="modal" id="historyModal">
-    <div style="background:var(--card); padding:25px; border-radius:24px; width:80%; max-height:70vh; overflow-y:auto; border:1px solid #334155;">
-        <h3>Activity History</h3>
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between;"><h3>History</h3><button onclick="closeModal('historyModal')" style="background:none; color:white; font-size:1.5em;">&times;</button></div>
         <div id="history-list"></div>
-        <button class="btn-add" style="width:100%; margin-top:15px;" onclick="closeModal('historyModal')">Close</button>
     </div>
 </div>
 
-<button class="btn-share" onclick="whatsappShare()">📲 Share Live Status</button>
+<button class="btn-share" onclick="whatsappCommunityShare()">📲 Share Live Status</button>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbzJwspa9tNV3D2mPwxN7JNRFmI0SbjKE9-VltIBKznochvAK59QADkbweQXEWyUezgS0w/exec";
-const ADMIN_PASS = "1234";
+const ADMIN_PASS = "1234"; 
 const START = new Date("March 24, 2026");
 const DIWALI = new Date("November 8, 2026");
 
-let data = { friends: [{name:"Munib", paid:0},{name:"Nadim", paid:0},{name:"Ruhan", paid:0}], groupExtra: 0, dailyGoal: 20, history: [] };
+let data = { friends: [], groupExtra: 0, dailyGoal: 20, history: [] };
 let isAdmin = localStorage.getItem('isMumbaiAdmin') === 'true';
 
-async function sync() {
+async function loadFromCloud() {
     try {
-        const res = await fetch(API_URL);
-        const cloud = await res.json();
-        if(cloud.friends) data = cloud;
+        const response = await fetch(API_URL);
+        const cloudData = await response.json();
+        if (cloudData.friends) data = cloudData;
+        document.getElementById('loader').style.display = 'none';
         render();
-    } catch(e) { render(); }
+    } catch (e) {
+        document.getElementById('loader').style.display = 'none';
+        render();
+    }
+}
+
+async function saveToCloud() {
+    document.getElementById('sync-status').innerText = "☁️ Updating Cloud...";
+    await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+    document.getElementById('sync-status').innerText = "✅ Live & Secure";
+}
+
+function checkPass(action, index = null) {
+    if (isAdmin) { executeAction(action, index); return; }
+    const p = prompt("Enter Admin Password:");
+    if (p === ADMIN_PASS) {
+        isAdmin = true;
+        localStorage.setItem('isMumbaiAdmin', 'true');
+        executeAction(action, index);
+    } else if (p !== null) { alert("Wrong Password!"); }
+}
+
+function executeAction(action, index) {
+    if (action === 'add') addMoney(index, data.dailyGoal);
+    if (action === 'custom') customAdd(index);
+    if (action === 'found') addFound();
+    if (action === 'settings') openModal('settingsModal');
+}
+
+function logout() {
+    isAdmin = false;
+    localStorage.removeItem('isMumbaiAdmin');
+    alert("Admin Logged Out");
+    location.reload();
 }
 
 function render() {
     const today = new Date();
     const should = getDays(START, today > START ? today : START) * data.dailyGoal;
-    const total = data.friends.reduce((s,f)=>s+f.paid, 0) + data.groupExtra;
+    const totalSaved = data.friends.reduce((s,f) => s + f.paid, 0) + data.groupExtra;
     
-    document.getElementById('days-left').innerText = getDays(today, DIWALI);
-    document.getElementById('total-val').innerText = "₹" + total.toLocaleString();
+    document.getElementById('days-left').innerText = getDays(today > START ? today : START, DIWALI);
+    document.getElementById('total-val').innerText = "₹" + totalSaved.toLocaleString();
 
     let html = "";
     data.friends.forEach((f, i) => {
         const diff = f.paid - should;
         const color = diff < 0 ? 'var(--danger)' : 'var(--success)';
         html += `<div class="card">
-            <div><b>${f.name}</b><br><small style="color:${color}">${diff<0?'Owes':'Extra'} ₹${Math.abs(diff)}</small></div>
+            <div><b>${f.name}</b> <br> ₹${f.paid} <span style="font-size:0.7em; font-weight:bold; color:${color}">${diff < 0 ? 'Owes: ₹'+Math.abs(diff) : 'Extra: ₹'+diff}</span></div>
             <div>
-                <button class="btn-add" onclick="checkPass('add',${i})">+₹20</button>
-                <button class="btn-custom" onclick="checkPass('custom',${i})">➕</button>
+                <button class="btn-add" onclick="checkPass('add', ${i})">${isAdmin ? '+₹20' : '🔒'}</button>
+                <button class="btn-custom" onclick="checkPass('custom', ${i})">${isAdmin ? '➕' : '🔒'}</button>
             </div>
         </div>`;
     });
     document.getElementById('friend-list').innerHTML = html;
-    document.getElementById('history-list').innerHTML = data.history.map(h => `<div style="font-size:0.8em; padding:5px 0; border-bottom:1px solid #334155;">${h.msg} <br><small style="opacity:0.5">${h.time}</small></div>`).join('');
+
+    let mHtml = "";
+    data.friends.forEach((f, i) => {
+        mHtml += `<div style="display:grid; grid-template-columns: 1fr 1fr 40px; gap:5px; margin-bottom:10px;">
+            <input type="text" value="${f.name}" onchange="edit(${i},'name',this.value)">
+            <input type="number" value="${f.paid}" onchange="edit(${i},'paid',this.value)">
+            <button onclick="remove(${i})" style="background:var(--danger); color:white; border-radius:8px;">×</button>
+        </div>`;
+    });
+    document.getElementById('manage-friends-list').innerHTML = mHtml;
+    document.getElementById('history-list').innerHTML = data.history.map(h => `<div style="padding:8px 0; border-bottom:1px solid #2d3748; font-size:0.8em;">${h.msg} <br><small style="opacity:0.4">${h.time}</small></div>`).join('') || "No history.";
     drawChart();
 }
 
-function getDays(f, t) {
-    let count = 0, cur = new Date(f);
-    while(cur <= t) { if(cur.getDay()!==0) count++; cur.setDate(cur.getDate()+1); }
+function getDays(from, to) {
+    let count = 0, cur = new Date(from);
+    while (cur <= to) { if (cur.getDay() !== 0) count++; cur.setDate(cur.getDate() + 1); }
     return count;
 }
 
-function startSpin() {
-    const deg = 1800 + Math.floor(Math.random()*360);
-    document.getElementById('wheel').style.transform = `rotate(${deg}deg)`;
-    setTimeout(() => { alert("Spin Done! Use Custom button to add winnings."); }, 4000);
+function runFutureCalc() {
+    const daily = prompt("If one person saves daily (₹):", "20");
+    const months = prompt("For how many months?", "3");
+    if (daily && months) {
+        const res = Number(daily) * 30 * Number(months);
+        alert(`📈 Calculation Results:\n\nPer Person: ₹${res.toLocaleString()}\nGroup Total (4 Friends): ₹${(res * 4).toLocaleString()}\n\nKeep Saving! 🚀`);
+    }
 }
 
-function flip(el) {
-    if(el.classList.contains('flip')) return;
-    el.classList.add('flip'); el.innerHTML = "₹50";
-    setTimeout(() => { alert("Add ₹50 bonus manually!"); closeModal('cardModal'); el.classList.remove('flip'); el.innerHTML="❓"; }, 800);
+async function addMoney(i, amt) {
+    data.friends[i].paid += Number(amt);
+    logAction(`${data.friends[i].name} +₹${amt}`);
+    render();
+    await saveToCloud();
 }
 
-function checkPass(act, i) {
-    if(isAdmin) { execute(act, i); return; }
-    let p = prompt("Admin Pass:");
-    if(p===ADMIN_PASS) { isAdmin=true; localStorage.setItem('isMumbaiAdmin','true'); execute(act, i); }
+async function customAdd(i) {
+    let val = prompt(`Add custom amount for ${data.friends[i].name}:`);
+    if(val && !isNaN(val)) {
+        addMoney(i, val);
+    }
 }
 
-function execute(act, i) {
-    if(act==='add') updateMoney(i, data.dailyGoal);
-    if(act==='custom') { let v=prompt("Amount?"); if(v) updateMoney(i, Number(v)); }
-    if(act==='found') { let v=prompt("Found?"); if(v) { data.groupExtra+=Number(v); log(`✨ Fund +₹${v}`); save(); } }
+async function addFound() { 
+    let a = prompt("Amount?"); 
+    if(a){ data.groupExtra += Number(a); logAction(`✨ Fund +₹${a}`); render(); await saveToCloud(); } 
 }
 
-function updateMoney(i, amt) {
-    data.friends[i].paid += amt;
-    log(`${data.friends[i].name} +₹${amt}`);
-    save();
+function logAction(msg) { 
+    data.history.unshift({msg, time: new Date().toLocaleString([], {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'})}); 
+    if(data.history.length > 20) data.history.pop(); 
 }
 
-function log(msg) {
-    data.history.unshift({msg, time: new Date().toLocaleTimeString()});
-    if(data.history.length > 15) data.history.pop();
+function updateGoal(val) { data.dailyGoal = Number(val); render(); saveToCloud(); }
+async function edit(i, f, v) { if(f==='paid') data.friends[i].paid = Number(v); else data.friends[i].name = v; render(); await saveToCloud(); }
+async function addNewFriend() { data.friends.push({name: "New Friend", paid: 0}); render(); await saveToCloud(); }
+async function remove(i) { if(confirm("Remove?")) { data.friends.splice(i, 1); render(); await saveToCloud(); } }
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+// Backup & Import
+function exportData() {
+    const a = document.createElement('a');
+    a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+    a.download = `Mumbai_Trip_Backup_${new Date().toLocaleDateString()}.json`;
+    a.click();
 }
 
-async function save() { render(); await fetch(API_URL, {method:'POST', body:JSON.stringify(data)}); }
+function importData(e) {
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            data = JSON.parse(event.target.result);
+            render();
+            await saveToCloud();
+            alert("Data Successfully Restored!");
+        } catch (err) { alert("Invalid File Format!"); }
+    };
+    reader.readAsText(e.target.files[0]);
+}
 
-function whatsappShare() {
-    let text = `🚢 *MUMBAI TRIP LIVE*\nTotal: ₹${document.getElementById('total-val').innerText}\n`;
-    data.friends.forEach(f => text += `👤 ${f.name}: ₹${f.paid}\n`);
+function whatsappCommunityShare() {
+    const should = getDays(START, new Date()) * data.dailyGoal;
+    let text = `🚢 *LIVE MUMBAI TRIP UPDATE*\n📅 Days Left: ${document.getElementById('days-left').innerText}\n---------------------------\n`;
+    data.friends.forEach(f => {
+        const diff = f.paid - should;
+        const status = diff < 0 ? ` (Owes: ₹${Math.abs(diff)})` : diff > 0 ? ` (Extra: ₹${diff} 🔥)` : ` (On Track ✅)`;
+        text += `👤 *${f.name}*: ₹${f.paid}${status}\n`;
+    });
+    text += `---------------------------\n💰 *Total Group Savings: ₹${data.friends.reduce((s,f)=>s+f.paid,0)+data.groupExtra}*`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
 }
 
 function drawChart() {
     const ctx = document.getElementById('chart').getContext('2d');
-    if(window.mChart) window.mChart.destroy();
-    window.mChart = new Chart(ctx, { type:'bar', data:{ labels:data.friends.map(f=>f.name), datasets:[{data:data.friends.map(f=>f.paid), backgroundColor:'#38bdf8'}] }, options:{ plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#1e293b'}}} } });
+    if (window.mChart) window.mChart.destroy();
+    window.mChart = new Chart(ctx, { type: 'bar', data: { labels: data.friends.map(f=>f.name), datasets: [{ data: data.friends.map(f=>f.paid), backgroundColor: '#38bdf8', borderRadius: 8 }] }, options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#1e293b'} } } } });
 }
 
-function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-sync();
+loadFromCloud();
+setInterval(loadFromCloud, 60000);
 </script>
 </body>
 </html>
