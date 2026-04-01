@@ -3,231 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumbai Trip 2026 | Games & Admin</title>
+    <title>Mumbai 2026 | Ultimate Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #0b0f1a; --card: #161c2d; --primary: #38bdf8; --success: #4ade80; --danger: #f87171; --text: #f8fafc; --accent: #818cf8; --gold: #fbbf24; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; padding-bottom: 100px; }
-        .container { max-width: 450px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .settings-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; }
+        :root { --bg: #050810; --card: #111827; --primary: #00d2ff; --accent: #9d50bb; --success: #00ff87; --danger: #ff416c; --gold: #fcc21b; --text: #ffffff; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; overflow-x: hidden; }
         
-        /* Main Stats */
-        .days-box { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #334155; }
-        .stat-card { background: var(--card); padding: 20px; border-radius: 18px; text-align: center; border: 1px solid #2d3748; margin-bottom: 15px; }
-        .card { background: var(--card); padding: 16px; margin-bottom: 12px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2d3748; }
+        /* Animations */
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes glow { 0% { box-shadow: 0 0 5px var(--primary); } 50% { box-shadow: 0 0 20px var(--primary); } 100% { box-shadow: 0 0 5px var(--primary); } }
         
-        /* Game Buttons */
-        .btn-zone { background: linear-gradient(45deg, #f43f5e, #fbbf24); color: white; width: 100%; padding: 18px; border-radius: 18px; font-weight: 800; border: none; cursor: pointer; font-size: 1.1em; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4); }
-        .btn-add { background: var(--primary); color: white; padding: 10px 15px; margin-left: 5px; border-radius: 12px; }
-        .btn-group { background: var(--success); color: white; width: 100%; padding: 14px; border-radius: 12px; margin-bottom: 20px; border:none; font-weight: bold; }
+        .container { max-width: 450px; margin: auto; animation: slideIn 0.5s ease; }
+        
+        /* Progress Bar 2.0 */
+        .progress-box { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid #ffffff10; margin-bottom: 20px; position: relative; }
+        .p-track { background: #1f2937; height: 12px; border-radius: 10px; margin: 15px 0; overflow: visible; position: relative; }
+        .p-fill { background: linear-gradient(90deg, var(--primary), var(--accent)); height: 100%; border-radius: 10px; width: 0%; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+        .train-head { position: absolute; right: -15px; top: -10px; font-size: 1.4em; filter: drop-shadow(0 0 5px var(--primary)); }
 
-        /* Game Zone Overlay */
-        .game-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: none; flex-direction: column; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .game-card { background: var(--card); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid #334155; cursor: pointer; transition: 0.2s; }
-        .game-card:active { transform: scale(0.95); }
+        /* Stat Cards */
+        .main-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid #ffffff10; text-align: center; }
+        .stat-card h2 { margin: 5px 0; color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+
+        /* Game Buttons */
+        .game-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .btn-game { padding: 15px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; color: white; transition: 0.3s; position: relative; overflow: hidden; }
+        .btn-game:active { transform: scale(0.9); }
+        .bg-spin { background: linear-gradient(45deg, #f093fb, #f5576c); }
+        .bg-card { background: linear-gradient(45deg, #5ee7df, #b490ca); }
+        .bg-board { background: linear-gradient(45deg, #30cfd0, #330867); grid-column: span 2; }
+
+        /* Friend List */
+        .friend-card { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #ffffff10; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+        .friend-card:hover { border-color: var(--primary); background: #1a2236; }
         
-        /* Board Game UI */
-        .board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; background: #1e293b; padding: 10px; border-radius: 12px; margin-bottom: 20px; }
-        .cell { height: 55px; background: #2d3748; border-radius: 5px; display: flex; align-items: center; justify-content: center; position: relative; font-size: 0.8em; }
-        .player-dot { width: 12px; height: 12px; border-radius: 50%; position: absolute; border: 2px solid white; z-index: 5; }
+        /* Snake & Ladder Multiplayer Board */
+        #board-modal { background: #000; }
+        .board-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: #111; padding: 10px; border-radius: 15px; border: 2px solid var(--accent); margin: 20px auto; width: 320px; }
+        .b-cell { height: 60px; background: #1f2937; border-radius: 5px; display: flex; align-items: center; justify-content: center; position: relative; font-size: 0.8em; color: #4b5563; }
+        .token { width: 14px; height: 14px; border-radius: 50%; position: absolute; border: 2px solid white; z-index: 10; transition: 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
         
-        /* Modals */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 3000; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 24px; width: 85%; max-width: 380px; border: 1px solid #334155; text-align: center; }
-        input { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; margin: 8px 0; }
+        /* Modal Style */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(10px); }
+        .modal-content { background: var(--card); padding: 30px; border-radius: 30px; border: 1px solid var(--primary); width: 85%; max-width: 380px; text-align: center; }
+        
+        .spin-wheel { width: 150px; height: 150px; border-radius: 50%; border: 5px solid var(--primary); margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 2.5em; font-weight: 900; animation: glow 2s infinite; }
+        
+        .btn-action { background: var(--primary); color: #000; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; margin-top: 10px; border:none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h2 style="margin:0;">🚢 Mumbai Live</h2>
-        <button class="settings-btn" onclick="checkPass('settings')">⚙️ Admin</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h1 style="margin:0; font-size:1.4em; background:linear-gradient(to right, #00d2ff, #9d50bb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">MUMBAI ELITE 2026</h1>
+        <button onclick="checkPass('settings')" style="background:none; border:none; font-size:1.5em; cursor:pointer;">⚙️</button>
     </div>
 
-    <div class="days-box">
-        <span style="font-size: 2.5em; font-weight: 800; color: var(--primary);" id="days-left">0</span><br>
-        <span style="opacity: 0.6; text-transform: uppercase; font-size: 0.7em;">Days Left till Diwali</span>
+    <div class="progress-box">
+        <div style="display:flex; justify-content:space-between; font-size:0.7em; font-weight:bold; color:var(--primary);">
+            <span>START: KHAMBHAT</span>
+            <span id="target-label">GOAL: ₹15,000</span>
+        </div>
+        <div class="p-track">
+            <div class="p-fill" id="progress-bar">
+                <span class="train-head">🚂</span>
+            </div>
+        </div>
+        <div style="text-align:center; font-size:0.8em; opacity:0.7;" id="percent-txt">0% of target reached</div>
     </div>
 
-    <div class="stat-card">
-        <small style="opacity:0.6;">TOTAL GROUP SAVINGS</small>
-        <span id="total-val" style="display:block; font-size:2.2em; font-weight:bold; color:var(--primary);">₹0</span>
+    <div class="main-stats">
+        <div class="stat-card">
+            <small>GROUP TOTAL</small>
+            <h2 id="total-val">₹0</h2>
+        </div>
+        <div class="stat-card">
+            <small>DAYS LEFT</small>
+            <h2 id="days-left">0</h2>
+        </div>
     </div>
 
-    <button class="btn-zone" onclick="openGameZone()">🎮 PLAY GAMES (FUN ZONE)</button>
-    
-    <button class="btn-group" onclick="checkPass('found')">✨ Add Found Money</button>
+    <div class="game-row">
+        <button class="btn-game bg-spin" onclick="openGame('spin')">🎡 LUCKY SPIN</button>
+        <button class="btn-game bg-card" onclick="openGame('card')">🃏 MYSTERY CARD</button>
+        <button class="btn-game bg-board" onclick="openGame('board')">🐍 MULTIPLAYER SNAKE & LADDER</button>
+    </div>
 
     <div id="friend-list"></div>
-    <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:10px;"></canvas>
 </div>
 
-<div class="game-overlay" id="gameZone">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="margin:0;">🕹️ Entertainment Zone</h2>
-        <button onclick="closeGameZone()" style="background:var(--danger); color:white; border:none; padding:8px 15px; border-radius:8px;">Exit</button>
-    </div>
-
-    <div id="game-list-menu" class="game-grid">
-        <div class="game-card" onclick="startSaapSidi()">🐍<br>Saap Sidi</div>
-        <div class="game-card" onclick="startTapWar()">🥊<br>Tap War</div>
-        <div class="game-card" onclick="startDiceRace()">🎲<br>Dice Race</div>
-        <div class="game-card" onclick="startCoinFlip()">🪙<br>Coin Flip</div>
-        <div class="game-card" onclick="startRPS()">✂️<br>R.P.S</div>
-        <div class="game-card" onclick="startNumberGuess()">🔢<br>Mind Read</div>
-    </div>
-
-    <div id="saap-sidi-view" style="display:none; margin-top:20px;">
-        <div class="board" id="ss-board"></div>
-        <div id="ss-turn" style="text-align:center; margin-bottom:10px; font-weight:bold; color:#ef4444;">Red's Turn</div>
-        <button class="btn-group" onclick="rollSS()">🎲 ROLL DICE</button>
-        <button onclick="backToMenu()" style="width:100%; background:none; color:white; border:none;">Back to Menu</button>
-    </div>
-
-    <div id="tap-war-view" style="display:none; height:80vh;">
-        <div id="p1-tap" style="height:50%; background:#ef4444; display:flex; align-items:center; justify-content:center; font-size:2em;" onclick="countTap(1)">P1: 0</div>
-        <div id="p2-tap" style="height:50%; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:2em;" onclick="countTap(2)">P2: 0</div>
+<div class="modal" id="spinModal">
+    <div class="modal-content">
+        <h3>LUCKY SPIN</h3>
+        <p id="spin-player">Rolling for Friend...</p>
+        <div class="spin-wheel" id="spin-res">?</div>
+        <button class="btn-action" id="spin-btn" onclick="startSpin()">SPIN NOW</button>
+        <button onclick="closeModal('spinModal')" style="background:none; border:none; color:gray; margin-top:15px;">Close</button>
     </div>
 </div>
 
-<div class="modal" id="settingsModal">
+<div class="modal" id="boardModal">
+    <div style="text-align:center; width:100%;">
+        <h2 style="color:var(--primary); margin-top:20px;">🐍 SNAKE & LADDER</h2>
+        <div class="board-grid" id="board-grid"></div>
+        <div id="turn-display" style="font-weight:bold; margin-bottom:10px;">Waiting for turn...</div>
+        <button class="btn-action" style="width:200px;" id="roll-btn" onclick="rollBoard()">🎲 ROLL DICE</button>
+        <button onclick="closeModal('boardModal')" style="background:none; border:none; color:white; margin-top:20px;">EXIT GAME</button>
+    </div>
+</div>
+
+<div class="modal" id="adminModal">
     <div class="modal-content" style="text-align:left;">
-        <h3>⚙️ Admin Panel</h3>
-        <div id="manage-friends-list"></div>
-        <button class="btn-group" onclick="closeModal('settingsModal')">Save & Sync</button>
+        <h3>⚙️ ADMIN PANEL</h3>
+        <div id="admin-friends"></div>
+        <hr style="opacity:0.1; margin:15px 0;">
+        <button class="btn-action" onclick="exportData()">💾 BACKUP DATA</button>
+        <label class="btn-action" style="display:block; text-align:center; background:var(--accent);">📂 IMPORT DATA <input type="file" style="display:none;" onchange="importData(event)"></label>
+        <button class="btn-action" style="background:var(--danger);" onclick="closeModal('adminModal')">CLOSE & SYNC</button>
     </div>
 </div>
 
 <script>
+// --- CONFIGURATION ---
 const API_URL = "https://script.google.com/macros/s/AKfycbzJwspa9tNV3D2mPwxN7JNRFmI0SbjKE9-VltIBKznochvAK59QADkbweQXEWyUezgS0w/exec";
 const ADMIN_PASS = "1234";
-const START = new Date("March 24, 2026");
-const DIWALI = new Date("November 8, 2026");
+const WEEKLY_LIMIT = 140;
 
-let data = { friends: [], groupExtra: 0, dailyGoal: 20, history: [] };
-let isAdmin = localStorage.getItem('isMumbaiAdmin') === 'true';
+let state = {
+    friends: [
+        {name: "Munib", paid: 0, wPaid: 0, lastPlayed: "", pos: 0, color: "#ff416c"},
+        {name: "Friend 2", paid: 0, wPaid: 0, lastPlayed: "", pos: 0, color: "#00d2ff"},
+        {name: "Friend 3", paid: 0, wPaid: 0, lastPlayed: "", pos: 0, color: "#00ff87"},
+        {name: "Friend 4", paid: 0, wPaid: 0, lastPlayed: "", pos: 0, color: "#fcc21b"}
+    ],
+    gameTurn: 0,
+    target: 15000,
+    lastUpdate: Date.now()
+};
 
-// --- CORE LOGIC ---
-async function sync() {
+let activeFriendIdx = 0;
+
+// --- CLOUD SYNC ---
+async function cloudSync() {
     try {
-        const res = await fetch(API_URL);
-        const cloud = await res.json();
-        if(cloud.friends) data = cloud;
+        const r = await fetch(API_URL);
+        const d = await r.json();
+        if(d.friends) state = d;
         render();
-    } catch(e) { render(); }
+    } catch(e) { console.warn("Cloud offline, using local storage"); render(); }
 }
 
-async function save() {
-    await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+async function cloudSave() {
+    await fetch(API_URL, { method: 'POST', body: JSON.stringify(state) });
     render();
 }
 
+// --- RENDER ENGINE ---
 function render() {
-    const today = new Date();
-    const should = Math.floor((today - START) / (1000*60*60*24)) * data.dailyGoal;
-    document.getElementById('days-left').innerText = Math.max(0, Math.floor((DIWALI - today) / (1000*60*60*24)));
+    const total = state.friends.reduce((s,f)=>s+f.paid, 0);
+    const perc = Math.min((total/state.target)*100, 100).toFixed(1);
     
+    document.getElementById('total-val').innerText = "₹" + total.toLocaleString();
+    document.getElementById('progress-bar').style.width = perc + "%";
+    document.getElementById('percent-txt').innerText = `${perc}% of ₹${state.target} reached`;
+    document.getElementById('target-label').innerText = "GOAL: ₹" + state.target;
+
     let html = "";
-    data.friends.forEach((f, i) => {
-        const diff = f.paid - should;
-        html += `<div class="card">
-            <div><b>${f.name}</b> <br> ₹${f.paid}</div>
-            <button class="btn-add" onclick="checkPass('add', ${i})">${isAdmin ? '+₹20' : '🔒'}</button>
+    let aHtml = "";
+    state.friends.forEach((f, i) => {
+        html += `
+        <div class="friend-card" onclick="activeFriendIdx=${i}">
+            <div>
+                <b>${f.name}</b><br>
+                <small style="opacity:0.6">This Week: ₹${f.wPaid}/${WEEKLY_LIMIT}</small>
+            </div>
+            <div style="text-align:right">
+                <div style="color:var(--primary); font-weight:bold;">₹${f.paid}</div>
+                <div style="height:4px; background:#1f2937; width:60px; margin-top:5px; border-radius:2px;">
+                    <div style="height:100%; background:var(--success); width:${(f.wPaid/WEEKLY_LIMIT)*100}%"></div>
+                </div>
+            </div>
+        </div>`;
+        aHtml += `<div style="margin-bottom:10px;">
+            <input type="text" value="${f.name}" style="width:50%; padding:5px;" onchange="edit(${i},'name',this.value)">
+            <input type="number" value="${f.paid}" style="width:30%; padding:5px;" onchange="edit(${i},'paid',this.value)">
         </div>`;
     });
     document.getElementById('friend-list').innerHTML = html;
-    document.getElementById('total-val').innerText = "₹" + (data.friends.reduce((s,f)=>s+f.paid,0)+data.groupExtra).toLocaleString();
-    updateChart();
-}
-
-function checkPass(act, idx) {
-    if(isAdmin || prompt("Pass:") === ADMIN_PASS) {
-        isAdmin = true; localStorage.setItem('isMumbaiAdmin', 'true');
-        if(act === 'add') { data.friends[idx].paid += 20; save(); }
-        if(act === 'settings') openModal('settingsModal');
-    }
+    document.getElementById('admin-friends').innerHTML = aHtml;
 }
 
 // --- GAME LOGIC ---
-function openGameZone() { document.getElementById('gameZone').style.display = 'flex'; }
-function closeGameZone() { document.getElementById('gameZone').style.display = 'none'; }
-function backToMenu() {
-    document.getElementById('game-list-menu').style.display = 'grid';
-    document.getElementById('saap-sidi-view').style.display = 'none';
-    document.getElementById('tap-war-view').style.display = 'none';
+function openGame(type) {
+    if(type === 'spin') {
+        document.getElementById('spin-player').innerText = "Playing for: " + state.friends[activeFriendIdx].name;
+        openModal('spinModal');
+    }
+    if(type === 'board') {
+        initBoard();
+        openModal('boardModal');
+    }
 }
 
-// Saap Sidi (Snakes & Ladders)
-let ss_players = [{p:0, c:'#ef4444'}, {p:0, c:'#3b82f6'}, {p:0, c:'#22c55e'}, {p:0, c:'#eab308'}];
-let ss_turn = 0;
+function startSpin() {
+    const f = state.friends[activeFriendIdx];
+    if(f.wPaid >= WEEKLY_LIMIT) return alert("Weekly Limit Reached!");
+    
+    const btn = document.getElementById('spin-btn');
+    btn.disabled = true;
+    
+    const possible = [10, 20, 30, 40].filter(v => v <= (WEEKLY_LIMIT - f.wPaid));
+    let win = possible[Math.floor(Math.random() * possible.length)] || 10;
 
-function startSaapSidi() {
-    document.getElementById('game-list-menu').style.display = 'none';
-    document.getElementById('saap-sidi-view').style.display = 'block';
-    const board = document.getElementById('ss-board');
-    board.innerHTML = "";
-    for(let i=25; i>=1; i--) board.innerHTML += `<div class="cell" id="c-${i}">${i}</div>`;
-    updateSS();
+    let count = 0;
+    const interval = setInterval(() => {
+        document.getElementById('spin-res').innerText = "₹" + [10,20,30,40][Math.floor(Math.random()*4)];
+        count++;
+        if(count > 20) {
+            clearInterval(interval);
+            document.getElementById('spin-res').innerText = "₹" + win;
+            setTimeout(() => {
+                f.paid += win;
+                f.wPaid += win;
+                alert(`🔥 ${f.name} added ₹${win} to savings!`);
+                btn.disabled = false;
+                cloudSave();
+                closeModal('spinModal');
+            }, 800);
+        }
+    }, 50);
 }
 
-function rollSS() {
-    let roll = Math.floor(Math.random() * 6) + 1;
-    let p = ss_players[ss_turn];
-    p.p += roll;
-    if(p.p === 3) p.p = 11; // Ladder
-    if(p.p === 15) p.p = 5;  // Snake
-    if(p.p >= 25) { alert("WINNER!"); p.p = 25; }
-    ss_turn = (ss_turn + 1) % 4;
-    document.getElementById('ss-turn').innerText = ["Red", "Blue", "Green", "Yellow"][ss_turn] + "'s Turn";
-    document.getElementById('ss-turn').style.color = ss_players[ss_turn].c;
-    updateSS();
+// Snake & Ladder Logic
+function initBoard() {
+    const grid = document.getElementById('board-grid');
+    grid.innerHTML = "";
+    for(let i=25; i>=1; i--) grid.innerHTML += `<div class="b-cell" id="bc-${i}">${i}</div>`;
+    updateTokens();
+    const curP = state.friends[state.gameTurn];
+    document.getElementById('turn-display').innerText = curP.name + "'s Turn";
+    document.getElementById('turn-display').style.color = curP.color;
 }
 
-function updateSS() {
-    document.querySelectorAll('.player-dot').forEach(d => d.remove());
-    ss_players.forEach((p, i) => {
-        if(p.p > 0) {
-            const dot = `<div class="player-dot" style="background:${p.c}; left:${i*5}px"></div>`;
-            document.getElementById('c-'+p.p).innerHTML += dot;
+function rollBoard() {
+    const f = state.friends[state.gameTurn];
+    const roll = Math.floor(Math.random() * 6) + 1;
+    alert(`🎲 ${f.name} rolled a ${roll}!`);
+    
+    f.pos += roll;
+    // Logic for Snakes/Ladders
+    if(f.pos === 4) f.pos = 14;
+    if(f.pos === 12) f.pos = 22;
+    if(f.pos === 18) f.pos = 7;
+    if(f.pos === 24) f.pos = 2;
+    if(f.pos >= 25) { alert("🏆 " + f.name + " WINS!"); f.pos = 25; }
+
+    state.gameTurn = (state.gameTurn + 1) % 4;
+    updateTokens();
+    cloudSave();
+}
+
+function updateTokens() {
+    document.querySelectorAll('.token').forEach(t => t.remove());
+    state.friends.forEach((f, i) => {
+        if(f.pos > 0) {
+            const cell = document.getElementById('bc-' + f.pos);
+            const token = document.createElement('div');
+            token.className = 'token';
+            token.style.background = f.color;
+            token.style.left = (i * 4) + "px";
+            cell.appendChild(token);
         }
     });
+    const curP = state.friends[state.gameTurn];
+    document.getElementById('turn-display').innerText = curP.name + "'s Turn";
+    document.getElementById('turn-display').style.color = curP.color;
 }
 
-// Tap War
-let t1=0, t2=0;
-function startTapWar() {
-    document.getElementById('game-list-menu').style.display = 'none';
-    document.getElementById('tap-war-view').style.display = 'block';
-    t1=0; t2=0;
-}
-function countTap(p) {
-    if(p===1) t1++; else t2++;
-    document.getElementById('p1-tap').innerText = "P1: "+t1;
-    document.getElementById('p2-tap').innerText = "P2: "+t2;
-    if(t1 >= 50) { alert("P1 Wins!"); backToMenu(); }
-    if(t2 >= 50) { alert("P2 Wins!"); backToMenu(); }
-}
-
-// Simple Games
-function startCoinFlip() { alert(Math.random() > 0.5 ? "🪙 HEADS" : "🪙 TAILS"); }
-function startRPS() { const move = ["Rock","Paper","Scissors"][Math.floor(Math.random()*3)]; alert("I choose: " + move); }
-function startNumberGuess() { alert("I am thinking of: " + (Math.floor(Math.random()*10)+1)); }
-function startDiceRace() { alert("You rolled a " + (Math.floor(Math.random()*6)+1) + "!"); }
-
-// Utils
+// --- ADMIN & UTILS ---
+function checkPass() { if(prompt("Pass:") === ADMIN_PASS) openModal('adminModal'); }
+function edit(i,f,v) { if(f==='paid') state.friends[i].paid=Number(v); else state.friends[i].name=v; render(); }
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-function updateChart() {
-    const ctx = document.getElementById('chart').getContext('2d');
-    if(window.myChart) window.myChart.destroy();
-    window.myChart = new Chart(ctx, { type:'bar', data:{ labels:data.friends.map(f=>f.name), datasets:[{data:data.friends.map(f=>f.paid), backgroundColor:'#38bdf8'}]}, options:{plugins:{legend:{display:false}}}});
+
+function exportData() {
+    const blob = new Blob([JSON.stringify(state)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'mumbai_trip_backup.json'; a.click();
 }
 
-sync();
-setInterval(sync, 60000);
+function importData(e) {
+    const reader = new FileReader();
+    reader.onload = (ev) => { state = JSON.parse(ev.target.result); cloudSave(); alert("Imported!"); };
+    reader.readAsText(e.target.files[0]);
+}
+
+// Auto-Sync every 30 seconds
+setInterval(cloudSync, 30000);
+cloudSync();
 </script>
 </body>
 </html>
