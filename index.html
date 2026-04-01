@@ -3,307 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumbai 2026 | Ultimate Pro</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Mumbai Elite 2026 | Master</title>
     <style>
-        :root { --bg: #050810; --card: #111827; --primary: #00d2ff; --accent: #9d50bb; --success: #00ff87; --danger: #ff416c; --gold: #fcc21b; --text: #ffffff; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; overflow-x: hidden; }
+        :root { --bg: #050810; --card: #111827; --primary: #00d2ff; --accent: #9d50bb; --success: #00ff87; --danger: #ff416c; --text: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        .container { max-width: 450px; margin: auto; }
         
-        /* Animations */
-        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes glow { 0% { box-shadow: 0 0 5px var(--primary); } 50% { box-shadow: 0 0 20px var(--primary); } 100% { box-shadow: 0 0 5px var(--primary); } }
-        
-        .container { max-width: 450px; margin: auto; animation: slideIn 0.5s ease; }
-        
-        /* Progress Bar 2.0 */
-        .progress-box { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid #ffffff10; margin-bottom: 20px; position: relative; }
-        .p-track { background: #1f2937; height: 12px; border-radius: 10px; margin: 15px 0; overflow: visible; position: relative; }
-        .p-fill { background: linear-gradient(90deg, var(--primary), var(--accent)); height: 100%; border-radius: 10px; width: 0%; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
-        .train-head { position: absolute; right: -15px; top: -10px; font-size: 1.4em; filter: drop-shadow(0 0 5px var(--primary)); }
+        /* Header & Progress */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .progress-box { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid #ffffff10; margin-bottom: 20px; }
+        .p-track { background: #1f2937; height: 12px; border-radius: 10px; margin: 15px 0; position: relative; }
+        .p-fill { background: linear-gradient(90deg, var(--primary), var(--accent)); height: 100%; border-radius: 10px; width: 0%; transition: 1.5s; position: relative; }
+        .train { position: absolute; right: -15px; top: -10px; font-size: 1.4em; text-shadow: 0 0 10px var(--primary); }
 
-        /* Stat Cards */
+        /* Stats Grid */
         .main-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .stat-card { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid #ffffff10; text-align: center; }
-        .stat-card h2 { margin: 5px 0; color: var(--primary); text-shadow: 0 0 10px var(--primary); }
+        .stat-card h2 { margin: 5px 0; color: var(--primary); font-size: 1.6em; text-shadow: 0 0 8px var(--primary); }
 
-        /* Game Buttons */
-        .game-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .btn-game { padding: 15px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; color: white; transition: 0.3s; position: relative; overflow: hidden; }
-        .btn-game:active { transform: scale(0.9); }
-        .bg-spin { background: linear-gradient(45deg, #f093fb, #f5576c); }
-        .bg-card { background: linear-gradient(45deg, #5ee7df, #b490ca); }
-        .bg-board { background: linear-gradient(45deg, #30cfd0, #330867); grid-column: span 2; }
+        /* Buttons */
+        .btn-fund { background: var(--success); color: #000; width: 100%; padding: 14px; border-radius: 15px; margin-bottom: 15px; font-weight: 800; border:none; cursor: pointer; }
+        .btn-action { padding: 8px 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; color: white; font-size: 0.8em; margin-left: 5px; }
+        .btn-plus { background: var(--primary); }
+        .btn-custom { background: var(--accent); }
 
-        /* Friend List */
-        .friend-card { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #ffffff10; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
-        .friend-card:hover { border-color: var(--primary); background: #1a2236; }
+        /* Friend Cards */
+        .friend-card { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #ffffff10; display: flex; justify-content: space-between; align-items: center; }
+        .friend-info b { font-size: 1.1em; display: block; }
+        .friend-info small { color: #6b7280; font-size: 0.75em; }
+        .status-tag { font-size: 0.7em; padding: 2px 6px; border-radius: 5px; font-weight: bold; margin-top: 4px; display: inline-block; }
         
-        /* Snake & Ladder Multiplayer Board */
-        #board-modal { background: #000; }
-        .board-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: #111; padding: 10px; border-radius: 15px; border: 2px solid var(--accent); margin: 20px auto; width: 320px; }
-        .b-cell { height: 60px; background: #1f2937; border-radius: 5px; display: flex; align-items: center; justify-content: center; position: relative; font-size: 0.8em; color: #4b5563; }
-        .token { width: 14px; height: 14px; border-radius: 50%; position: absolute; border: 2px solid white; z-index: 10; transition: 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
-        
-        /* Modal Style */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(10px); }
-        .modal-content { background: var(--card); padding: 30px; border-radius: 30px; border: 1px solid var(--primary); width: 85%; max-width: 380px; text-align: center; }
-        
-        .spin-wheel { width: 150px; height: 150px; border-radius: 50%; border: 5px solid var(--primary); margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 2.5em; font-weight: 900; animation: glow 2s infinite; }
-        
-        .btn-action { background: var(--primary); color: #000; width: 100%; padding: 12px; border-radius: 12px; font-weight: bold; margin-top: 10px; border:none; }
+        /* Modals */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(10px); }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 30px; border: 1px solid var(--primary); width: 85%; max-width: 380px; }
+        input { background: #0b0f1a; border: 1px solid #334155; color: white; padding: 12px; border-radius: 10px; width: 100%; margin: 10px 0; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h1 style="margin:0; font-size:1.4em; background:linear-gradient(to right, #00d2ff, #9d50bb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">MUMBAI ELITE 2026</h1>
+    <div class="header">
+        <h2 style="margin:0; background:linear-gradient(to right, #00d2ff, #9d50bb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">MUMBAI ELITE 2026</h2>
         <button onclick="checkPass('settings')" style="background:none; border:none; font-size:1.5em; cursor:pointer;">⚙️</button>
     </div>
 
     <div class="progress-box">
-        <div style="display:flex; justify-content:space-between; font-size:0.7em; font-weight:bold; color:var(--primary);">
+        <div style="display:flex; justify-content:space-between; font-size:0.75em; font-weight:bold; color:var(--primary);">
             <span>START: KHAMBHAT</span>
-            <span id="target-label">GOAL: ₹15,000</span>
+            <span id="expected-label">EXPECTED: ₹...</span>
         </div>
-        <div class="p-track">
-            <div class="p-fill" id="progress-bar">
-                <span class="train-head">🚂</span>
-            </div>
-        </div>
-        <div style="text-align:center; font-size:0.8em; opacity:0.7;" id="percent-txt">0% of target reached</div>
+        <div class="p-track"><div class="p-fill" id="p-bar"><span class="train">🚂</span></div></div>
+        <div style="text-align:center; font-size:0.7em; opacity:0.6;" id="p-label">Calculation Live...</div>
     </div>
 
     <div class="main-stats">
-        <div class="stat-card">
-            <small>GROUP TOTAL</small>
-            <h2 id="total-val">₹0</h2>
-        </div>
-        <div class="stat-card">
-            <small>DAYS LEFT</small>
-            <h2 id="days-left">0</h2>
-        </div>
+        <div class="stat-card"><small>TOTAL SAVED</small><h2 id="total-val">₹0</h2></div>
+        <div class="stat-card"><small>DAYS LEFT</small><h2 id="days-left">0</h2></div>
     </div>
 
-    <div class="game-row">
-        <button class="btn-game bg-spin" onclick="openGame('spin')">🎡 LUCKY SPIN</button>
-        <button class="btn-game bg-card" onclick="openGame('card')">🃏 MYSTERY CARD</button>
-        <button class="btn-game bg-board" onclick="openGame('board')">🐍 MULTIPLAYER SNAKE & LADDER</button>
-    </div>
+    <button class="btn-fund" onclick="checkPass('found')">✨ ADD GROUP FOUND FUND</button>
 
     <div id="friend-list"></div>
 </div>
 
-<div class="modal" id="spinModal">
-    <div class="modal-content">
-        <h3>LUCKY SPIN</h3>
-        <p id="spin-player">Rolling for Friend...</p>
-        <div class="spin-wheel" id="spin-res">?</div>
-        <button class="btn-action" id="spin-btn" onclick="startSpin()">SPIN NOW</button>
-        <button onclick="closeModal('spinModal')" style="background:none; border:none; color:gray; margin-top:15px;">Close</button>
-    </div>
-</div>
-
-<div class="modal" id="boardModal">
-    <div style="text-align:center; width:100%;">
-        <h2 style="color:var(--primary); margin-top:20px;">🐍 SNAKE & LADDER</h2>
-        <div class="board-grid" id="board-grid"></div>
-        <div id="turn-display" style="font-weight:bold; margin-bottom:10px;">Waiting for turn...</div>
-        <button class="btn-action" style="width:200px;" id="roll-btn" onclick="rollBoard()">🎲 ROLL DICE</button>
-        <button onclick="closeModal('boardModal')" style="background:none; border:none; color:white; margin-top:20px;">EXIT GAME</button>
-    </div>
-</div>
-
 <div class="modal" id="adminModal">
-    <div class="modal-content" style="text-align:left;">
-        <h3>⚙️ ADMIN PANEL</h3>
-        <div id="admin-friends"></div>
+    <div class="modal-content">
+        <h3 style="text-align:center;">⚙️ ADMIN PANEL</h3>
+        <label style="font-size:0.8em; opacity:0.7;">Daily Goal Per Person (₹):</label>
+        <input type="number" id="daily-inp" onchange="updateDaily(this.value)">
         <hr style="opacity:0.1; margin:15px 0;">
-        <button class="btn-action" onclick="exportData()">💾 BACKUP DATA</button>
-        <label class="btn-action" style="display:block; text-align:center; background:var(--accent);">📂 IMPORT DATA <input type="file" style="display:none;" onchange="importData(event)"></label>
-        <button class="btn-action" style="background:var(--danger);" onclick="closeModal('adminModal')">CLOSE & SYNC</button>
+        <div id="admin-list"></div>
+        <button class="btn-fund" style="margin-top:20px;" onclick="exportData()">💾 BACKUP DATA</button>
+        <button class="btn-fund" style="background:var(--danger);" onclick="closeModal('adminModal')">CLOSE & SYNC</button>
     </div>
 </div>
 
 <script>
-// --- CONFIGURATION ---
 const API_URL = "https://script.google.com/macros/s/AKfycbzJwspa9tNV3D2mPwxN7JNRFmI0SbjKE9-VltIBKznochvAK59QADkbweQXEWyUezgS0w/exec";
 const ADMIN_PASS = "1234";
-const WEEKLY_LIMIT = 140;
+const START_DATE = new Date("2026-03-24");
+const DIWALI_DATE = new Date("2026-11-08");
 
 let state = {
     friends: [
-        {name: "Munib", paid: 0, wPaid: 0, lastPlayed: "", pos: 0, color: "#ff416c"},
-        {name: "Friend 2", paid: 0, wPaid: 0, lastPlayed: "", pos: 0, color: "#00d2ff"},
-        {name: "Friend 3", paid: 0, wPaid: 0, lastPlayed: "", pos: 0, color: "#00ff87"},
-        {name: "Friend 4", paid: 0, wPaid: 0, lastPlayed: "", pos: 0, color: "#fcc21b"}
+        {name: "Munib", paid: 0}, {name: "Nadim", paid: 0}, 
+        {name: "Ruhan", paid: 0}, {name: "Friend 4", paid: 0}
     ],
-    gameTurn: 0,
-    target: 15000,
-    lastUpdate: Date.now()
+    groupExtra: 0,
+    dailyGoal: 20
 };
 
-let activeFriendIdx = 0;
-
-// --- CLOUD SYNC ---
-async function cloudSync() {
-    try {
-        const r = await fetch(API_URL);
-        const d = await r.json();
-        if(d.friends) state = d;
-        render();
-    } catch(e) { console.warn("Cloud offline, using local storage"); render(); }
+// Calculate how many non-Sundays have passed until today
+function getExpectedPerPerson() {
+    let today = new Date();
+    if (today < START_DATE) return 0;
+    let count = 0;
+    let cur = new Date(START_DATE);
+    while(cur <= today && cur <= DIWALI_DATE) {
+        if(cur.getDay() !== 0) count++;
+        cur.setDate(cur.getDate() + 1);
+    }
+    return count * (state.dailyGoal || 20);
 }
 
-async function cloudSave() {
+async function sync() {
+    try {
+        const res = await fetch(API_URL);
+        const cloud = await res.json();
+        if(cloud.friends) state = cloud;
+        render();
+    } catch(e) { render(); }
+}
+
+async function save() {
     await fetch(API_URL, { method: 'POST', body: JSON.stringify(state) });
     render();
 }
 
-// --- RENDER ENGINE ---
 function render() {
-    const total = state.friends.reduce((s,f)=>s+f.paid, 0);
-    const perc = Math.min((total/state.target)*100, 100).toFixed(1);
+    const expected = getExpectedPerPerson();
+    const total = state.friends.reduce((s,f) => s + (f.paid || 0), 0) + (state.groupExtra || 0);
+    const groupExpected = expected * state.friends.length;
+    const perc = Math.min((total / groupExpected) * 100, 100).toFixed(1);
     
+    document.getElementById('expected-label').innerText = "EXPECTED: ₹" + expected.toLocaleString();
     document.getElementById('total-val').innerText = "₹" + total.toLocaleString();
-    document.getElementById('progress-bar').style.width = perc + "%";
-    document.getElementById('percent-txt').innerText = `${perc}% of ₹${state.target} reached`;
-    document.getElementById('target-label').innerText = "GOAL: ₹" + state.target;
+    document.getElementById('p-bar').style.width = isNaN(perc) ? "0%" : perc + "%";
+    document.getElementById('p-label').innerText = `Group is at ${perc}% of current expected target`;
+    document.getElementById('daily-inp').value = state.dailyGoal || 20;
+
+    const diffDays = Math.max(0, Math.floor((DIWALI_DATE - new Date())/(1000*60*60*24)));
+    document.getElementById('days-left').innerText = diffDays;
 
     let html = "";
     let aHtml = "";
     state.friends.forEach((f, i) => {
+        const personalDiff = (f.paid || 0) - expected;
+        const statusClass = personalDiff < 0 ? 'background:rgba(248,113,113,0.2); color:#f87171;' : 'background:rgba(74,222,128,0.2); color:#4ade80;';
+        const statusText = personalDiff < 0 ? `Owes ₹${Math.abs(personalDiff)}` : `Extra ₹${personalDiff}`;
+
         html += `
-        <div class="friend-card" onclick="activeFriendIdx=${i}">
-            <div>
-                <b>${f.name}</b><br>
-                <small style="opacity:0.6">This Week: ₹${f.wPaid}/${WEEKLY_LIMIT}</small>
+        <div class="friend-card">
+            <div class="friend-info">
+                <b>${f.name}</b>
+                <div class="status-tag" style="${statusClass}">${statusText}</div>
             </div>
-            <div style="text-align:right">
-                <div style="color:var(--primary); font-weight:bold;">₹${f.paid}</div>
-                <div style="height:4px; background:#1f2937; width:60px; margin-top:5px; border-radius:2px;">
-                    <div style="height:100%; background:var(--success); width:${(f.wPaid/WEEKLY_LIMIT)*100}%"></div>
+            <div style="text-align:right;">
+                <div style="color:var(--primary); font-weight:bold; font-size:1.2em;">₹${f.paid || 0}</div>
+                <div style="margin-top:8px;">
+                    <button class="btn-action btn-plus" onclick="checkPass('add', ${i})">+₹${state.dailyGoal}</button>
+                    <button class="btn-action btn-custom" onclick="checkPass('custom', ${i})">➕ Custom</button>
                 </div>
             </div>
         </div>`;
-        aHtml += `<div style="margin-bottom:10px;">
-            <input type="text" value="${f.name}" style="width:50%; padding:5px;" onchange="edit(${i},'name',this.value)">
-            <input type="number" value="${f.paid}" style="width:30%; padding:5px;" onchange="edit(${i},'paid',this.value)">
+        
+        aHtml += `<div style="margin-bottom:10px; display:flex; gap:5px;">
+            <input type="text" value="${f.name}" style="flex:2;" onchange="state.friends[${i}].name=this.value">
+            <input type="number" value="${f.paid || 0}" style="flex:1;" onchange="state.friends[${i}].paid=Number(this.value)">
         </div>`;
     });
-    document.getElementById('friend-list').innerHTML = html;
-    document.getElementById('admin-friends').innerHTML = aHtml;
+    
+    document.getElementById('friend-list').innerHTML = html + `
+        <div class="friend-card" style="border:1px dashed var(--success); opacity:0.8;">
+            <div class="friend-info"><b>✨ Group Found Fund</b><small>Shared extra money</small></div>
+            <div style="color:var(--success); font-weight:bold; font-size:1.2em;">₹${state.groupExtra || 0}</div>
+        </div>`;
+    document.getElementById('admin-list').innerHTML = aHtml;
 }
 
-// --- GAME LOGIC ---
-function openGame(type) {
-    if(type === 'spin') {
-        document.getElementById('spin-player').innerText = "Playing for: " + state.friends[activeFriendIdx].name;
-        openModal('spinModal');
-    }
-    if(type === 'board') {
-        initBoard();
-        openModal('boardModal');
-    }
-}
-
-function startSpin() {
-    const f = state.friends[activeFriendIdx];
-    if(f.wPaid >= WEEKLY_LIMIT) return alert("Weekly Limit Reached!");
-    
-    const btn = document.getElementById('spin-btn');
-    btn.disabled = true;
-    
-    const possible = [10, 20, 30, 40].filter(v => v <= (WEEKLY_LIMIT - f.wPaid));
-    let win = possible[Math.floor(Math.random() * possible.length)] || 10;
-
-    let count = 0;
-    const interval = setInterval(() => {
-        document.getElementById('spin-res').innerText = "₹" + [10,20,30,40][Math.floor(Math.random()*4)];
-        count++;
-        if(count > 20) {
-            clearInterval(interval);
-            document.getElementById('spin-res').innerText = "₹" + win;
-            setTimeout(() => {
-                f.paid += win;
-                f.wPaid += win;
-                alert(`🔥 ${f.name} added ₹${win} to savings!`);
-                btn.disabled = false;
-                cloudSave();
-                closeModal('spinModal');
-            }, 800);
+function checkPass(act, idx) {
+    const p = prompt("Enter Admin Password:");
+    if(p === ADMIN_PASS) {
+        if(act === 'add') { state.friends[idx].paid = (state.friends[idx].paid || 0) + (state.dailyGoal || 20); save(); }
+        if(act === 'custom') { 
+            let amt = prompt(`Enter custom amount to add for ${state.friends[idx].name}:`);
+            if(amt && !isNaN(amt)) { state.friends[idx].paid = (state.friends[idx].paid || 0) + Number(amt); save(); }
         }
-    }, 50);
-}
-
-// Snake & Ladder Logic
-function initBoard() {
-    const grid = document.getElementById('board-grid');
-    grid.innerHTML = "";
-    for(let i=25; i>=1; i--) grid.innerHTML += `<div class="b-cell" id="bc-${i}">${i}</div>`;
-    updateTokens();
-    const curP = state.friends[state.gameTurn];
-    document.getElementById('turn-display').innerText = curP.name + "'s Turn";
-    document.getElementById('turn-display').style.color = curP.color;
-}
-
-function rollBoard() {
-    const f = state.friends[state.gameTurn];
-    const roll = Math.floor(Math.random() * 6) + 1;
-    alert(`🎲 ${f.name} rolled a ${roll}!`);
-    
-    f.pos += roll;
-    // Logic for Snakes/Ladders
-    if(f.pos === 4) f.pos = 14;
-    if(f.pos === 12) f.pos = 22;
-    if(f.pos === 18) f.pos = 7;
-    if(f.pos === 24) f.pos = 2;
-    if(f.pos >= 25) { alert("🏆 " + f.name + " WINS!"); f.pos = 25; }
-
-    state.gameTurn = (state.gameTurn + 1) % 4;
-    updateTokens();
-    cloudSave();
-}
-
-function updateTokens() {
-    document.querySelectorAll('.token').forEach(t => t.remove());
-    state.friends.forEach((f, i) => {
-        if(f.pos > 0) {
-            const cell = document.getElementById('bc-' + f.pos);
-            const token = document.createElement('div');
-            token.className = 'token';
-            token.style.background = f.color;
-            token.style.left = (i * 4) + "px";
-            cell.appendChild(token);
+        if(act === 'found') { 
+            let amt = prompt("How much extra group money found?");
+            if(amt && !isNaN(amt)) { state.groupExtra = (state.groupExtra || 0) + Number(amt); save(); }
         }
-    });
-    const curP = state.friends[state.gameTurn];
-    document.getElementById('turn-display').innerText = curP.name + "'s Turn";
-    document.getElementById('turn-display').style.color = curP.color;
+        if(act === 'settings') openModal('adminModal');
+    } else if (p !== null) { alert("Wrong Password!"); }
 }
 
-// --- ADMIN & UTILS ---
-function checkPass() { if(prompt("Pass:") === ADMIN_PASS) openModal('adminModal'); }
-function edit(i,f,v) { if(f==='paid') state.friends[i].paid=Number(v); else state.friends[i].name=v; render(); }
+function updateDaily(val) { state.dailyGoal = Number(val); render(); }
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; save(); }
 
 function exportData() {
-    const blob = new Blob([JSON.stringify(state)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'mumbai_trip_backup.json'; a.click();
+    a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+    a.download = `Mumbai_Trip_Backup.json`; a.click();
 }
 
-function importData(e) {
-    const reader = new FileReader();
-    reader.onload = (ev) => { state = JSON.parse(ev.target.result); cloudSave(); alert("Imported!"); };
-    reader.readAsText(e.target.files[0]);
-}
-
-// Auto-Sync every 30 seconds
-setInterval(cloudSync, 30000);
-cloudSync();
+sync();
+setInterval(sync, 30000); // Auto-refresh every 30 seconds
 </script>
 </body>
 </html>
