@@ -3,198 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mumbai Elite | Pro Gaming Hub</title>
+    <title>Mumbai Elite 2026</title>
     <style>
-        :root { --bg: #020617; --card: #1e293b; --primary: #38bdf8; --accent: #c084fc; --success: #22c55e; --danger: #ef4444; --gold: #fde047; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; margin: 0; padding: 10px; overflow-x: hidden; }
+        :root { --bg: #050810; --card: #111827; --primary: #00d2ff; --accent: #9d50bb; --success: #00ff87; --danger: #ff416c; --text: #ffffff; --gold: #fde047; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+        .container { max-width: 450px; margin: auto; }
         
-        /* High-End Header */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(30, 41, 59, 0.5); border-radius: 20px; border: 1px solid #ffffff10; margin-bottom: 20px; }
-        .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-box { background: var(--card); padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #ffffff10; }
-        .stat-box h3 { margin: 5px 0; color: var(--primary); font-size: 1.4em; }
+        /* Stats & Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .main-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid #ffffff10; text-align: center; position: relative; }
+        .stat-card h2 { margin: 5px 0; color: var(--primary); font-size: 1.6em; }
+        .exp-tag { position: absolute; top: 0; right: 0; background: var(--accent); font-size: 0.6em; padding: 4px 8px; border-bottom-left-radius: 10px; font-weight: bold; }
 
-        /* Game Center Grid */
-        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .game-card { background: var(--card); border-radius: 20px; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border: 1px solid #ffffff10; cursor: pointer; transition: 0.3s; overflow: hidden; }
-        .game-card:active { transform: scale(0.95); }
-        .game-card.wide { grid-column: span 2; height: 120px; }
-        .game-card img { width: 60px; height: 60px; margin-bottom: 10px; filter: drop-shadow(0 0 10px var(--primary)); }
-        .game-card b { font-size: 0.9em; }
+        /* Game Hub */
+        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .game-btn { background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 20px; height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #ffffff10; cursor: pointer; transition: 0.3s; }
+        .game-btn:active { transform: scale(0.95); }
+        .game-btn.wide { grid-column: span 2; height: 80px; flex-direction: row; gap: 15px; }
+        .game-icon { font-size: 2.2em; filter: drop-shadow(0 0 8px var(--primary)); }
 
-        /* Lobby / Player Selection */
-        .lobby-box { padding: 20px; text-align: center; }
-        .player-count-btns { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
-        .p-btn { width: 50px; height: 50px; border-radius: 12px; border: 2px solid #ffffff20; background: none; color: white; font-weight: bold; cursor: pointer; }
-        .p-btn.active { border-color: var(--primary); background: rgba(56, 189, 248, 0.2); }
+        /* Buttons */
+        .btn-fund { background: var(--success); color: #000; width: 100%; padding: 14px; border-radius: 15px; margin-bottom: 15px; font-weight: 800; border:none; cursor: pointer; }
+        .btn-action { padding: 8px 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; color: white; font-size: 0.8em; margin-left: 5px; }
+        .btn-plus { background: var(--primary); }
+        .btn-custom { background: var(--accent); }
 
-        /* Mystery Card 4-Grid */
-        .card-spread { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
-        .m-card { height: 140px; background: linear-gradient(135deg, #312e81, #1e1b4b); border-radius: 15px; border: 2px solid var(--accent); position: relative; perspective: 1000px; transform-style: preserve-3d; transition: 0.6s; }
-        .m-card.flip { transform: rotateY(180deg); }
+        /* Friend Cards */
+        .friend-card { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 12px; border: 1px solid #ffffff10; display: flex; justify-content: space-between; align-items: center; }
+        .status-tag { font-size: 0.7em; padding: 3px 8px; border-radius: 6px; font-weight: bold; margin-top: 5px; display: inline-block; }
 
-        /* Spin Wheel */
-        .wheel-container { position: relative; width: 250px; height: 250px; margin: 20px auto; }
-        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #334155; position: relative; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); background: conic-gradient(var(--danger) 0 90deg, var(--primary) 90deg 180deg, var(--success) 180deg 270deg, var(--gold) 270deg 360deg); }
-        .wheel-pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid white; z-index: 10; }
-
-        /* Board Games */
-        .board-container { width: 340px; height: 340px; margin: auto; background: #0f172a; border: 4px solid #334155; display: grid; grid-template-columns: repeat(10, 1fr); gap: 1px; }
-        .cell { background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 0.6em; position: relative; }
-        .piece { width: 15px; height: 15px; border-radius: 50%; border: 2px solid white; position: absolute; z-index: 5; transition: 0.5s; }
-
-        /* General Modal */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: none; flex-direction: column; z-index: 1000; }
-        .modal-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-main { background: var(--primary); color: #000; padding: 15px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; width: 90%; margin: 20px auto; }
+        /* Modal & Games */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: none; flex-direction: column; z-index: 1000; align-items: center; justify-content: center; }
+        .wheel-box { position: relative; width: 260px; height: 260px; margin: 20px auto; }
+        .wheel-canvas { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #334155; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); background: conic-gradient(var(--danger) 0% 25%, var(--primary) 25% 50%, var(--success) 50% 75%, var(--gold) 75% 100%); }
+        .pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid white; z-index: 10; }
+        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; width: 85%; }
+        .m-card { height: 130px; background: #312e81; border-radius: 15px; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 2em; cursor: pointer; transition: 0.6s; transform-style: preserve-3d; }
+        .m-card.flip { transform: rotateY(180deg); background: var(--success); }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div><small>EXPECTED</small><br><b id="exp-val">₹...</b></div>
-    <h2 style="margin:0; font-size: 1.2em; color: var(--accent);">MUMBAI ELITE</h2>
-    <button onclick="checkPass('settings')" style="background:none; border:none; font-size:1.5em; cursor:pointer;">⚙️</button>
-</div>
-
-<div class="stats-row">
-    <div class="stat-box"><small>TOTAL SAVED</small><h3 id="total-val">₹0</h3></div>
-    <div class="stat-box"><small>DAYS LEFT</small><h3 id="days-left">0</h3></div>
-</div>
-
-<div class="game-grid">
-    <div class="game-card" onclick="openLobby('spin')">
-        <img src="https://img.icons8.com/fluency/96/fortune-wheel.png">
-        <b>LUCKY SPIN</b>
+<div class="container">
+    <div class="header">
+        <h2 style="margin:0; background:linear-gradient(to right, #00d2ff, #9d50bb); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">MUMBAI ELITE 2026</h2>
+        <button onclick="checkPass('settings')" style="background:none; border:none; font-size:1.5em; cursor:pointer;">⚙️</button>
     </div>
-    <div class="game-card" onclick="openLobby('cards')">
-        <img src="https://img.icons8.com/fluency/96/playing-cards.png">
-        <b>MYSTERY CARDS</b>
-    </div>
-    <div class="game-card wide" onclick="openLobby('ludo')">
-        <img src="https://img.icons8.com/fluency/96/board-game.png">
-        <b>MULTIPLAYER LUDO</b>
-    </div>
-    <div class="game-card wide" onclick="openLobby('snake')">
-        <img src="https://img.icons8.com/fluency/96/snake.png">
-        <b>SNAKE & LADDERS</b>
-    </div>
-</div>
 
-<button class="btn-main" style="background:var(--success); margin-top:0;" onclick="checkPass('found')">✨ ADD GROUP FOUND FUND</button>
-
-<div id="friend-list"></div>
-
-<div class="modal" id="lobbyModal">
-    <div class="modal-header"><h3>GAME LOBBY</h3><button onclick="closeModal('lobbyModal')">❌</button></div>
-    <div class="lobby-box">
-        <h4 id="lobby-game-name">Game Name</h4>
-        <p>Choose Number of Players:</p>
-        <div class="player-count-btns">
-            <button class="p-btn" onclick="setPlayers(2)">2</button>
-            <button class="p-btn active" onclick="setPlayers(3)">3</button>
-            <button class="p-btn" onclick="setPlayers(4)">4</button>
+    <div class="main-stats">
+        <div class="stat-card">
+            <div class="exp-tag" id="exp-tag">EXP: ₹0</div>
+            <small>SAVED TOTAL</small><h2 id="total-val">₹0</h2>
         </div>
-        <div id="online-check" style="margin-top:30px; opacity:0.6;">Checking Friends Online...</div>
-        <button class="btn-main" id="start-btn" onclick="startGame()">START SESSION</button>
+        <div class="stat-card"><small>DAYS LEFT</small><h2 id="days-left">0</h2></div>
     </div>
+
+    <div class="game-grid">
+        <div class="game-btn" onclick="openModal('spinModal')"><span class="game-icon">🎡</span><b>SPIN</b></div>
+        <div class="game-btn" onclick="openModal('cardModal')"><span class="game-icon">🃏</span><b>CARDS</b></div>
+        <div class="game-btn wide" onclick="alert('Board Logic Syncing...')"><span class="game-icon">🐍</span><b>SNAKE & LADDERS</b></div>
+    </div>
+
+    <button class="btn-fund" onclick="checkPass('found')">✨ ADD GROUP FOUND FUND</button>
+    <div id="friend-list"></div>
 </div>
 
 <div class="modal" id="spinModal">
-    <div class="modal-header"><h3>LUCKY WHEEL</h3><button onclick="closeModal('spinModal')">❌</button></div>
-    <div class="wheel-container">
-        <div class="wheel-pointer"></div>
-        <div class="wheel" id="wheel-obj"></div>
-    </div>
-    <button class="btn-main" onclick="spinNow()">SPIN WHEEL</button>
+    <h2 style="color:var(--primary)">LUCKY SPIN</h2>
+    <div class="wheel-box"><div class="pointer"></div><div class="wheel-canvas" id="wheel"></div></div>
+    <button class="btn-fund" style="width:200px" onclick="startSpin()">SPIN</button>
+    <button onclick="closeModal('spinModal')" style="color:gray; background:none; border:none;">CLOSE</button>
 </div>
 
 <div class="modal" id="cardModal">
-    <div class="modal-header"><h3>CHOOSE 1 OF 4</h3><button onclick="closeModal('cardModal')">❌</button></div>
-    <div class="card-spread">
-        <div class="m-card" onclick="flipCard(this)"></div>
-        <div class="m-card" onclick="flipCard(this)"></div>
-        <div class="m-card" onclick="flipCard(this)"></div>
-        <div class="m-card" onclick="flipCard(this)"></div>
+    <h2 style="color:var(--accent)">PICK 1 OF 4</h2>
+    <div class="card-grid">
+        <div class="m-card" onclick="flip(this)">❓</div><div class="m-card" onclick="flip(this)">❓</div>
+        <div class="m-card" onclick="flip(this)">❓</div><div class="m-card" onclick="flip(this)">❓</div>
     </div>
+    <button onclick="closeModal('cardModal')" style="color:gray; background:none; border:none; margin-top:20px;">CLOSE</button>
 </div>
 
 <script>
-const API_URL = "YOUR_APPS_SCRIPT_URL";
+const API_URL = "YOUR_APPS_SCRIPT_URL"; // Replace with your URL
 const ADMIN_PASS = "1234";
-let state = { friends: [], groupExtra: 0, dailyGoal: 20 };
-let currentGame = '';
-let playerCount = 3;
+const START_DATE = new Date("2026-03-24");
 
-// --- CORE SYNC ---
+let state = { friends: [
+    {name: "Munib", paid: 360}, {name: "Nadim", paid: 200}, 
+    {name: "Ruhan", paid: 220}, {name: "Friend 4", paid: 0}
+], groupExtra: 0, dailyGoal: 20 };
+
 async function sync() {
     try {
         const res = await fetch(API_URL);
-        const data = await res.json();
-        if(data.friends) state = data;
+        const cloud = await res.json();
+        if(cloud.friends) state = cloud;
         render();
-    } catch(e) { console.error("Sync Error"); }
+    } catch(e) { render(); }
 }
 
 function render() {
-    const exp = calculateExpected();
-    document.getElementById('exp-val').innerText = "₹" + exp;
-    document.getElementById('total-val').innerText = "₹" + state.friends.reduce((s,f)=>s+(f.paid||0),0);
+    const exp = getExpected();
+    const total = state.friends.reduce((s,f) => s + (f.paid || 0), 0) + (state.groupExtra || 0);
+    document.getElementById('total-val').innerText = "₹" + total;
+    document.getElementById('exp-tag').innerText = "EXP: ₹" + exp;
     
+    const diffDays = Math.max(0, Math.floor((new Date("2026-11-08") - new Date())/(1000*60*60*24)));
+    document.getElementById('days-left').innerText = diffDays;
+
     let html = "";
     state.friends.forEach((f, i) => {
-        html += `<div class="stat-box" style="margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="text-align:left;"><b>${f.name}</b><br><small>Paid: ₹${f.paid||0}</small></div>
-            <button onclick="checkPass('add',${i})" style="background:var(--primary); border:none; padding:8px 15px; border-radius:10px; font-weight:bold;">+₹20</button>
+        const diff = (f.paid || 0) - exp;
+        const color = diff < 0 ? 'var(--danger)' : 'var(--success)';
+        html += `<div class="friend-card">
+            <div>
+                <b>${f.name}</b><br>
+                <span class="status-tag" style="background:${color}33; color:${color}">${diff < 0 ? 'Owes' : 'Extra'} ₹${Math.abs(diff)}</span>
+            </div>
+            <div style="text-align:right;">
+                <b style="color:var(--primary); font-size:1.2em;">₹${f.paid || 0}</b>
+                <div style="margin-top:8px;">
+                    <button class="btn-action btn-plus" onclick="checkPass('add', ${i})">+₹${state.dailyGoal}</button>
+                    <button class="btn-action btn-custom" onclick="checkPass('custom', ${i})">➕</button>
+                </div>
+            </div>
         </div>`;
     });
-    document.getElementById('friend-list').innerHTML = html;
+    document.getElementById('friend-list').innerHTML = html + `
+        <div class="friend-card" style="border:1px dashed var(--success); opacity:0.8;">
+            <b>✨ Group Found Fund</b><b style="color:var(--success)">₹${state.groupExtra || 0}</b>
+        </div>`;
 }
 
-function calculateExpected() {
-    let start = new Date("2026-03-24"), count = 0, cur = new Date();
-    while(start <= cur) { if(start.getDay()!==0) count++; start.setDate(start.getDate()+1); }
-    return count * state.dailyGoal;
+function getExpected() {
+    let count = 0, cur = new Date(START_DATE), today = new Date();
+    while(cur <= today) { if(cur.getDay() !== 0) count++; cur.setDate(cur.getDate() + 1); }
+    return count * (state.dailyGoal || 20);
 }
 
-// --- LOBBY LOGIC ---
-function openLobby(game) {
-    currentGame = game;
-    document.getElementById('lobby-game-name').innerText = game.toUpperCase();
-    document.getElementById('lobbyModal').style.display = 'flex';
-}
-
-function setPlayers(n) {
-    playerCount = n;
-    document.querySelectorAll('.p-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-}
-
-function startGame() {
-    closeModal('lobbyModal');
-    if(currentGame === 'spin') openModal('spinModal');
-    if(currentGame === 'cards') openModal('cardModal');
-}
-
-// --- SPIN LOGIC ---
-let isSpinning = false;
-function spinNow() {
-    if(isSpinning) return;
-    isSpinning = true;
+function startSpin() {
     const deg = 1800 + Math.floor(Math.random() * 360);
-    document.getElementById('wheel-obj').style.transform = `rotate(${deg}deg)`;
-    setTimeout(() => {
-        alert("🎉 You won a bonus ₹20 for your savings!");
-        isSpinning = false;
-    }, 4000);
+    document.getElementById('wheel').style.transform = `rotate(${deg}deg)`;
+    setTimeout(() => { alert("Spin Complete! Add winnings via Custom button."); }, 4000);
 }
 
-// --- CARD LOGIC ---
-function flipCard(el) {
+function flip(el) {
     if(el.classList.contains('flip')) return;
-    el.classList.add('flip');
-    el.innerHTML = `<div style="transform:rotateY(180deg); display:flex; align-items:center; justify-content:center; height:100%; font-weight:bold; font-size:1.5em; color:var(--gold);">₹50</div>`;
-    setTimeout(() => alert("Extra ₹50 Added!"), 500);
+    el.classList.add('flip'); el.innerHTML = "₹50";
+    setTimeout(() => { alert("Add ₹50 via Custom button!"); closeModal('cardModal'); el.classList.remove('flip'); el.innerHTML="❓"; }, 800);
+}
+
+function checkPass(act, idx) {
+    const p = prompt("Pass:");
+    if(p === ADMIN_PASS) {
+        if(act === 'add') { state.friends[idx].paid += state.dailyGoal; save(); }
+        if(act === 'custom') { let a = prompt("Amount?"); if(a) { state.friends[idx].paid += Number(a); save(); } }
+        if(act === 'found') { let a = prompt("Found Amount?"); if(a) { state.groupExtra += Number(a); save(); } }
+    }
+}
+
+async function save() {
+    await fetch(API_URL, { method: 'POST', body: JSON.stringify(state) });
+    render();
 }
 
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
