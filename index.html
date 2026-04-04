@@ -151,7 +151,6 @@ function executeAction(action, index) {
         openModal('settingsModal');
         document.getElementById('current-daily-label').innerText = data.dailyGoal;
         document.getElementById('new-daily-val').value = data.dailyGoal;
-        // Default calculator date to today
         document.getElementById('calc-start-date').valueAsDate = new Date();
     }
 }
@@ -170,16 +169,9 @@ function updateDailySaving() {
 function calculateOnly() {
     const daily = Number(document.getElementById('calc-daily').value);
     const selectedDate = new Date(document.getElementById('calc-start-date').value);
-    
-    if(!daily || isNaN(selectedDate.getTime())) {
-        alert("Please enter a valid amount and date.");
-        return;
-    }
-    
-    // Calculate days excluding Sundays from the selected date to Diwali
+    if(!daily || isNaN(selectedDate.getTime())) { alert("Please enter a valid amount and date."); return; }
     const totalDays = getDays(selectedDate, DIWALI);
     const perPerson = totalDays * daily;
-    
     document.getElementById('res-days').innerText = totalDays;
     document.getElementById('res-p').innerText = "₹" + perPerson.toLocaleString();
     document.getElementById('res-g').innerText = "₹" + (perPerson * 4).toLocaleString();
@@ -252,7 +244,30 @@ function openModal(id) { document.getElementById(id).style.display = 'flex'; }
 function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
 function whatsappCommunityShare() {
-    let text = `🚢 *MUMBAI TRIP UPDATE*\n💰 Total Saved: ₹${document.getElementById('total-val').innerText}\n📊 Progress: ${document.getElementById('percent-text').innerText}\n📅 Days Left: ${document.getElementById('days-left').innerText}`;
+    const today = new Date();
+    const activeDate = today > START ? today : START;
+    const daysLeft = getDays(activeDate, DIWALI);
+    const totalDaysElapsed = getDays(START, activeDate);
+    const expectedPerPerson = totalDaysElapsed * data.dailyGoal;
+    const totalSaved = data.friends.reduce((s,f) => s + f.paid, 0) + data.groupExtra;
+
+    let text = `🚢 *LIVE MUMBAI TRIP UPDATE*\n📅 Days Left: ${daysLeft}\n---------------------------\n`;
+    
+    data.friends.forEach(f => {
+        const diff = f.paid - expectedPerPerson;
+        let statusText = "";
+        if (diff < 0) {
+            statusText = `(Owes: ₹${Math.abs(diff)})`;
+        } else if (diff > 0) {
+            statusText = `(Extra: ₹${diff} 🔥)`;
+        } else {
+            statusText = `(On Track ✅)`;
+        }
+        text += `👤 *${f.name}*: ₹${f.paid} ${statusText}\n`;
+    });
+
+    text += `---------------------------\n💰 *Total Group Savings: ₹${totalSaved}*`;
+    
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
 }
 
