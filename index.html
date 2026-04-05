@@ -257,9 +257,9 @@ function whatsappCommunityShare() {
         const diff = f.paid - expectedPerPerson;
         let statusText = "";
         if (diff < 0) {
-            statusText = `(Owes: ₹${Math.abs(diff)})`;
+            statusText = `(Owes(-) : ₹${Math.abs(diff)})`;
         } else if (diff > 0) {
-            statusText = `(Extra: ₹${diff} 🔥)`;
+            statusText = `(Extra(+): ₹${diff} 🔥)`;
         } else {
             statusText = `(On Track ✅)`;
         }
