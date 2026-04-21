@@ -23,6 +23,7 @@
         button { border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-add { background: var(--primary); color: white; padding: 10px 15px; margin-left: 5px; }
         .btn-custom { background: var(--accent); color: white; padding: 10px 15px; margin-left: 5px; }
+        .btn-history { background: #1e293b; color: white; padding: 10px 12px; border: 1px solid #334155; }
         .btn-group { background: var(--success); color: white; width: 100%; padding: 14px; margin-bottom: 20px; }
         .btn-share { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #25D366; color: white; padding: 15px; font-size: 1.1em; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
@@ -32,6 +33,9 @@
         hr { border: 0.5px solid #334155; margin: 15px 0; }
         .calc-box { background: #0b0f1a; padding: 15px; border-radius: 15px; border: 1px solid #334155; margin-bottom: 15px; }
         label { font-size: 0.75rem; opacity: 0.7; display: block; margin-top: 5px; }
+        
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 0.9em; }
+        .history-item:last-child { border: none; }
     </style>
 </head>
 <body>
@@ -72,10 +76,18 @@
     <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px; border:1px solid #2d3748;"></canvas>
 </div>
 
+<div class="modal" id="historyModal">
+    <div class="modal-content">
+        <h3 id="history-name" style="margin-top:0; color:var(--primary);">History</h3>
+        <div id="history-content" class="calc-box" style="max-height: 400px; overflow-y: auto;">
+            </div>
+        <button class="btn-add" style="width:100%; background:var(--danger); margin-top:10px;" onclick="closeModal('historyModal')">Close</button>
+    </div>
+</div>
+
 <div class="modal" id="settingsModal">
     <div class="modal-content">
         <h3>⚙️ Admin Panel</h3>
-        
         <div class="calc-box" style="border-color: var(--primary);">
             <h4 style="margin:0; color:var(--primary); font-size: 0.9em;">💰 Set Daily Saving Amount</h4>
             <div style="display:flex; gap:10px; align-items:center; margin-top:10px;">
@@ -87,22 +99,17 @@
 
         <div class="calc-box">
             <h4 style="margin:0; color:var(--accent); font-size: 0.9em;">📈 Saving Calculator</h4>
-            
             <label>Start From Date:</label>
             <input type="date" id="calc-start-date">
-            
             <label>Daily Amount (₹):</label>
             <input type="number" id="calc-daily" placeholder="Enter Daily Amount (₹)">
-            
             <button class="settings-btn" style="width:100%; background:var(--accent); margin-top:10px;" onclick="calculateOnly()">Calculate Results</button>
-            
             <div id="calc-result" style="font-size: 0.85em; margin-top: 15px; display:none; line-height:1.6; border-top:1px solid #334155; padding-top:10px;">
                 Days Found: <b id="res-days" style="color:white;">0</b><br>
                 Expected/Person: <b id="res-p" style="color:var(--primary);">₹0</b><br>
                 Group Total (4): <b id="res-g" style="color:var(--success);">₹0</b>
             </div>
         </div>
-
         <hr>
         <div id="manage-friends-list"></div>
         <button class="btn-add" style="width:100%; background:var(--success); margin: 10px 0;" onclick="addNewFriend()">+ Add Friend</button>
@@ -118,14 +125,18 @@ const ADMIN_PASS = "1234";
 const START = new Date("March 24, 2026");
 const DIWALI = new Date("November 8, 2026");
 
-let data = { friends: [], groupExtra: 0, dailyGoal: 20, history: [], targetGoal: 50000 };
+let data = { friends: [], groupExtra: 0, dailyGoal: 20, targetGoal: 50000 };
 let isAdmin = localStorage.getItem('isMumbaiAdmin') === 'true';
 
 async function loadFromCloud() {
     try {
         const response = await fetch(API_URL);
         const cloudData = await response.json();
-        if (cloudData.friends) data = cloudData;
+        if (cloudData.friends) {
+            data = cloudData;
+            // Ensure every friend has a history array
+            data.friends.forEach(f => { if(!f.history) f.history = []; });
+        }
         document.getElementById('loader').style.display = 'none';
         render();
     } catch (e) { document.getElementById('loader').style.display = 'none'; render(); }
@@ -153,6 +164,24 @@ function executeAction(action, index) {
         document.getElementById('new-daily-val').value = data.dailyGoal;
         document.getElementById('calc-start-date').valueAsDate = new Date();
     }
+}
+
+function showHistory(i) {
+    const friend = data.friends[i];
+    document.getElementById('history-name').innerText = friend.name + "'s History";
+    let hContent = "";
+    if(!friend.history || friend.history.length === 0) {
+        hContent = "<p style='opacity:0.5; text-align:center;'>No history found.</p>";
+    } else {
+        [...friend.history].reverse().forEach(item => {
+            hContent += `<div class="history-item">
+                <span style="opacity:0.7;">${item.date}</span>
+                <span style="color:var(--success); font-weight:bold;">+₹${item.amount}</span>
+            </div>`;
+        });
+    }
+    document.getElementById('history-content').innerHTML = hContent;
+    openModal('historyModal');
 }
 
 function updateDailySaving() {
@@ -183,8 +212,7 @@ function render() {
     const activeDate = today > START ? today : START;
     const totalDaysElapsed = getDays(START, activeDate);
     const expectedPerPerson = totalDaysElapsed * data.dailyGoal;
-    
-    const totalSaved = data.friends.reduce((s,f) => s + f.paid, 0) + data.groupExtra;
+    const totalSaved = data.friends.reduce((s,f) => s + (f.paid || 0), 0) + data.groupExtra;
     
     document.getElementById('days-left').innerText = getDays(activeDate, DIWALI);
     document.getElementById('total-val').innerText = "₹" + totalSaved.toLocaleString();
@@ -196,11 +224,15 @@ function render() {
 
     let html = "";
     data.friends.forEach((f, i) => {
-        const diff = f.paid - expectedPerPerson;
+        const diff = (f.paid || 0) - expectedPerPerson;
         const color = diff < 0 ? 'var(--danger)' : 'var(--success)';
         html += `<div class="card">
-            <div><b>${f.name}</b><br>₹${f.paid} <span style="font-size:0.7em; color:${color}">${diff < 0 ? 'Owes: ₹'+Math.abs(diff) : 'Extra: ₹'+diff}</span></div>
             <div>
+                <b>${f.name}</b><br>
+                ₹${f.paid || 0} <span style="font-size:0.7em; color:${color}">${diff < 0 ? 'Owes: ₹'+Math.abs(diff) : 'Extra: ₹'+diff}</span>
+            </div>
+            <div style="display:flex; align-items:center;">
+                <button class="btn-history" onclick="showHistory(${i})">📅</button>
                 <button class="btn-add" onclick="checkPass('add', ${i})">+₹${data.dailyGoal}</button>
                 <button class="btn-custom" onclick="checkPass('custom', ${i})">➕</button>
             </div>
@@ -212,7 +244,7 @@ function render() {
     data.friends.forEach((f, i) => {
         mHtml += `<div style="display:grid; grid-template-columns: 1fr 1fr 40px; gap:5px; margin-bottom:10px;">
             <input type="text" value="${f.name}" onchange="edit(${i},'name',this.value)">
-            <input type="number" value="${f.paid}" onchange="edit(${i},'paid',this.value)">
+            <input type="number" value="${f.paid || 0}" onchange="edit(${i},'paid',this.value)">
             <button onclick="remove(${i})" style="background:var(--danger); color:white; border-radius:8px;">×</button>
         </div>`;
     });
@@ -232,12 +264,25 @@ function getDays(from, to) {
     return count;
 }
 
-async function addMoney(i, amt) { data.friends[i].paid += Number(amt); render(); await saveToCloud(); }
+async function addMoney(i, amt) {
+    const friend = data.friends[i];
+    friend.paid = (friend.paid || 0) + Number(amt);
+    if(!friend.history) friend.history = [];
+    
+    // Log history
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+    friend.history.push({ date: dateStr, amount: Number(amt) });
+    
+    render();
+    await saveToCloud();
+}
+
 async function customAdd(i) { let v = prompt("Amount?"); if(v) addMoney(i, v); }
 async function addFound() { let a = prompt("Found Amount?"); if(a){ data.groupExtra += Number(a); render(); await saveToCloud(); } }
 
 async function edit(i, f, v) { if(f==='paid') data.friends[i].paid = Number(v); else data.friends[i].name = v; render(); await saveToCloud(); }
-async function addNewFriend() { data.friends.push({name: "New", paid: 0}); render(); await saveToCloud(); }
+async function addNewFriend() { data.friends.push({name: "New", paid: 0, history: []}); render(); await saveToCloud(); }
 async function remove(i) { if(confirm("Remove?")) { data.friends.splice(i, 1); render(); await saveToCloud(); } }
 
 function openModal(id) { document.getElementById(id).style.display = 'flex'; }
@@ -249,32 +294,22 @@ function whatsappCommunityShare() {
     const daysLeft = getDays(activeDate, DIWALI);
     const totalDaysElapsed = getDays(START, activeDate);
     const expectedPerPerson = totalDaysElapsed * data.dailyGoal;
-    const totalSaved = data.friends.reduce((s,f) => s + f.paid, 0) + data.groupExtra;
+    const totalSaved = data.friends.reduce((s,f) => s + (f.paid || 0), 0) + data.groupExtra;
 
     let text = `🚢 *LIVE MUMBAI TRIP UPDATE*\n📅 Days Left: ${daysLeft}\n---------------------------\n`;
-    
     data.friends.forEach(f => {
-        const diff = f.paid - expectedPerPerson;
-        let statusText = "";
-        if (diff < 0) {
-            statusText = `(Owes(-) : ₹${Math.abs(diff)})`;
-        } else if (diff > 0) {
-            statusText = `(Extra(+): ₹${diff} 🔥)`;
-        } else {
-            statusText = `(On Track ✅)`;
-        }
-        text += `👤 *${f.name}*: ₹${f.paid} ${statusText}\n`;
+        const diff = (f.paid || 0) - expectedPerPerson;
+        let statusText = diff < 0 ? `(Owes(-) : ₹${Math.abs(diff)})` : diff > 0 ? `(Extra(+): ₹${diff} 🔥)` : `(On Track ✅)`;
+        text += `👤 *${f.name}*: ₹${f.paid || 0} ${statusText}\n`;
     });
-
     text += `---------------------------\n💰 *Total Group Savings: ₹${totalSaved}*`;
-    
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
 }
 
 function drawChart() {
     const ctx = document.getElementById('chart').getContext('2d');
     if (window.mChart) window.mChart.destroy();
-    window.mChart = new Chart(ctx, { type: 'bar', data: { labels: data.friends.map(f=>f.name), datasets: [{ data: data.friends.map(f=>f.paid), backgroundColor: '#38bdf8' }] }, options: { plugins: { legend: { display: false } } } });
+    window.mChart = new Chart(ctx, { type: 'bar', data: { labels: data.friends.map(f=>f.name), datasets: [{ data: data.friends.map(f=>f.paid || 0), backgroundColor: '#38bdf8' }] }, options: { plugins: { legend: { display: false } } } });
 }
 
 loadFromCloud();
