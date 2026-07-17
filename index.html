@@ -134,7 +134,10 @@ async function loadFromCloud() {
         const cloudData = await response.json();
         if (cloudData.friends) {
             data = cloudData;
-            // Ensure every friend has a history array
+            
+            // ADD THIS EXACT LINE TO FORCE 30:
+            data.dailyGoal = 30; 
+            
             data.friends.forEach(f => { if(!f.history) f.history = []; });
         }
         document.getElementById('loader').style.display = 'none';
