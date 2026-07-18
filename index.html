@@ -94,7 +94,7 @@
                 <input type="number" id="new-daily-val" placeholder="Ex: 30">
                 <button class="btn-add" onclick="updateDailySaving()">Update</button>
             </div>
-            <p style="font-size: 0.7em; opacity: 0.6; margin: 5px 0 0 0;">Current: ₹<span id="current-daily-label">20</span>/day</p>
+            <p style="font-size: 0.7em; opacity: 0.6; margin: 5px 0 0 0;">Current: ₹<span id="current-daily-label">30</span>/day</p>
         </div>
 
         <div class="calc-box">
@@ -124,8 +124,9 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzJwspa9tNV3D2mPwxN7JNR
 const ADMIN_PASS = "1234"; 
 const START = new Date("March 24, 2026");
 const DIWALI = new Date("November 8, 2026");
+const RATE_CHANGE_DATE = new Date("July 17, 2026"); // The exact day the rate changed to 30
 
-let data = { friends: [], groupExtra: 0, dailyGoal: 20, targetGoal: 50000 };
+let data = { friends: [], groupExtra: 0, dailyGoal: 30, targetGoal: 50000 };
 let isAdmin = localStorage.getItem('isMumbaiAdmin') === 'true';
 
 async function loadFromCloud() {
@@ -134,10 +135,7 @@ async function loadFromCloud() {
         const cloudData = await response.json();
         if (cloudData.friends) {
             data = cloudData;
-            
-            // ADD THIS EXACT LINE TO FORCE 30:
-            data.dailyGoal = 30; 
-            
+            data.dailyGoal = 30; // SAFEGUARD: Forces goal to 30 even if DB says 20
             data.friends.forEach(f => { if(!f.history) f.history = []; });
         }
         document.getElementById('loader').style.display = 'none';
@@ -210,11 +208,41 @@ function calculateOnly() {
     document.getElementById('calc-result').style.display = 'block';
 }
 
+// THE NEW SPLIT CALCULATOR LOGIC
+function getExpectedAmount(targetDate) {
+    let expected = 0;
+    let cur = new Date(START);
+    cur.setHours(0,0,0,0);
+    
+    let end = new Date(targetDate);
+    end.setHours(0,0,0,0);
+    
+    let rateChange = new Date(RATE_CHANGE_DATE);
+    rateChange.setHours(0,0,0,0);
+
+    // Count day by day to apply the right rule
+    while (cur <= end) {
+        if (cur < rateChange) {
+            // Before July 17: Save ₹20, skip Sundays
+            if (cur.getDay() !== 0) {
+                expected += 20;
+            }
+        } else {
+            // July 17 onwards: Save ₹30, include Sundays
+            expected += 30;
+        }
+        cur.setDate(cur.getDate() + 1); // Move to next day
+    }
+    return expected;
+}
+
 function render() {
     const today = new Date();
     const activeDate = today > START ? today : START;
-    const totalDaysElapsed = getDays(START, activeDate);
-    const expectedPerPerson = totalDaysElapsed * data.dailyGoal;
+    
+    // Uses the new day-by-day split calculator
+    const expectedPerPerson = getExpectedAmount(activeDate);
+    
     const totalSaved = data.friends.reduce((s,f) => s + (f.paid || 0), 0) + data.groupExtra;
     
     document.getElementById('days-left').innerText = getDays(activeDate, DIWALI);
@@ -261,7 +289,7 @@ function getDays(from, to) {
     let target = new Date(to);
     target.setHours(0,0,0,0);
     while (cur <= target) { 
-        if (cur.getDay() !== 0) count++; 
+        count++; // Sundays included for simple counting
         cur.setDate(cur.getDate() + 1); 
     }
     return count;
@@ -272,7 +300,6 @@ async function addMoney(i, amt) {
     friend.paid = (friend.paid || 0) + Number(amt);
     if(!friend.history) friend.history = [];
     
-    // Log history
     const now = new Date();
     const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
     friend.history.push({ date: dateStr, amount: Number(amt) });
@@ -295,8 +322,9 @@ function whatsappCommunityShare() {
     const today = new Date();
     const activeDate = today > START ? today : START;
     const daysLeft = getDays(activeDate, DIWALI);
-    const totalDaysElapsed = getDays(START, activeDate);
-    const expectedPerPerson = totalDaysElapsed * data.dailyGoal;
+    
+    // Uses the new day-by-day split calculator for WhatsApp shares
+    const expectedPerPerson = getExpectedAmount(activeDate);
     const totalSaved = data.friends.reduce((s,f) => s + (f.paid || 0), 0) + data.groupExtra;
 
     let text = `🚢 *LIVE MUMBAI TRIP UPDATE*\n📅 Days Left: ${daysLeft}\n---------------------------\n`;
