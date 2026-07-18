@@ -11,7 +11,7 @@
         .container { max-width: 450px; margin: auto; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; transition: 0.5s; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .settings-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; }
+        .settings-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-weight: bold; }
         .days-box { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #334155; }
         .stat-card { background: var(--card); padding: 20px; border-radius: 18px; text-align: center; border: 1px solid #2d3748; }
         
@@ -48,7 +48,7 @@
 <div class="container">
     <div class="header">
         <h2 style="margin:0;">🚢 Mumbai Live</h2>
-        <button class="settings-btn" onclick="checkPass('settings')">⚙️ Admin</button>
+        <button class="settings-btn" id="admin-btn" onclick="checkPass('settings')">🔒 Admin Login</button>
     </div>
 
     <div class="sync-indicator" id="sync-status">Connected & Secure</div>
@@ -63,7 +63,7 @@
         <span id="total-val" style="display:block; font-size:2.2em; font-weight:bold; color:var(--primary);">₹0</span>
         <div style="display: flex; justify-content: space-between; font-size: 0.7em; margin-top: 10px; opacity: 0.8;">
             <span>Current Progress:</span>
-            <span id="target-display">Goal: ₹50,000</span>
+            <span id="target-display">Goal: ₹0</span>
         </div>
         <div class="progress-container">
             <div class="progress-bar" id="main-progress"></div>
@@ -71,7 +71,9 @@
         </div>
     </div>
 
-    <button class="btn-group" style="margin-top:20px;" onclick="checkPass('found')">✨ Add Group Fund Money</button>
+    <!-- Hidden by default, only shows when Admin is logged in -->
+    <button class="btn-group" id="group-fund-btn" style="margin-top:20px; display:none;" onclick="checkPass('found')">✨ Add Group Fund Money</button>
+    
     <div id="friend-list"></div>
     <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px; border:1px solid #2d3748;"></canvas>
 </div>
@@ -107,13 +109,14 @@
             <div id="calc-result" style="font-size: 0.85em; margin-top: 15px; display:none; line-height:1.6; border-top:1px solid #334155; padding-top:10px;">
                 Days Found: <b id="res-days" style="color:white;">0</b><br>
                 Expected/Person: <b id="res-p" style="color:var(--primary);">₹0</b><br>
-                Group Total (4): <b id="res-g" style="color:var(--success);">₹0</b>
+                Group Total: <b id="res-g" style="color:var(--success);">₹0</b>
             </div>
         </div>
         <hr>
         <div id="manage-friends-list"></div>
         <button class="btn-add" style="width:100%; background:var(--success); margin: 10px 0;" onclick="addNewFriend()">+ Add Friend</button>
-        <button class="btn-add" style="width:100%; background:var(--danger);" onclick="closeModal('settingsModal')">Close & Sync</button>
+        <button class="btn-add" style="width:100%; background:#f59e0b; margin-top: 10px;" onclick="logoutAdmin()">🔒 Lock Admin Panel</button>
+        <button class="btn-add" style="width:100%; background:var(--danger); margin-top: 10px;" onclick="closeModal('settingsModal')">Close & Sync</button>
     </div>
 </div>
 
@@ -121,12 +124,15 @@
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbzJwspa9tNV3D2mPwxN7JNRFmI0SbjKE9-VltIBKznochvAK59QADkbweQXEWyUezgS0w/exec";
+
+// ⚠️ CHANGE THIS PASSWORD TO SOMETHING SECRET!
 const ADMIN_PASS = "1234"; 
+
 const START = new Date("March 24, 2026");
 const DIWALI = new Date("November 8, 2026");
 const RATE_CHANGE_DATE = new Date("July 17, 2026"); // The exact day the rate changed to 30
 
-let data = { friends: [], groupExtra: 0, dailyGoal: 30, targetGoal: 50000 };
+let data = { friends: [], groupExtra: 0, dailyGoal: 30 };
 let isAdmin = localStorage.getItem('isMumbaiAdmin') === 'true';
 
 async function loadFromCloud() {
@@ -135,7 +141,7 @@ async function loadFromCloud() {
         const cloudData = await response.json();
         if (cloudData.friends) {
             data = cloudData;
-            data.dailyGoal = 30; // SAFEGUARD: Forces goal to 30 even if DB says 20
+            data.dailyGoal = 30; // SAFEGUARD
             data.friends.forEach(f => { if(!f.history) f.history = []; });
         }
         document.getElementById('loader').style.display = 'none';
@@ -151,8 +157,16 @@ async function saveToCloud() {
 
 function checkPass(action, index = null) {
     if (isAdmin) { executeAction(action, index); return; }
-    const p = prompt("Admin Password:");
-    if (p === ADMIN_PASS) { isAdmin = true; localStorage.setItem('isMumbaiAdmin', 'true'); executeAction(action, index); }
+    
+    const p = prompt("Admin Password Required:");
+    if (p === ADMIN_PASS) { 
+        isAdmin = true; 
+        localStorage.setItem('isMumbaiAdmin', 'true'); 
+        render(); // Instantly reveals the hidden buttons!
+        executeAction(action, index); 
+    } else if (p !== null) {
+        alert("Incorrect Password! Access Denied.");
+    }
 }
 
 function executeAction(action, index) {
@@ -165,6 +179,14 @@ function executeAction(action, index) {
         document.getElementById('new-daily-val').value = data.dailyGoal;
         document.getElementById('calc-start-date').valueAsDate = new Date();
     }
+}
+
+function logoutAdmin() {
+    isAdmin = false;
+    localStorage.removeItem('isMumbaiAdmin');
+    closeModal('settingsModal');
+    render();
+    alert("Admin features locked. The page is now secure.");
 }
 
 function showHistory(i) {
@@ -202,13 +224,14 @@ function calculateOnly() {
     if(!daily || isNaN(selectedDate.getTime())) { alert("Please enter a valid amount and date."); return; }
     const totalDays = getDays(selectedDate, DIWALI);
     const perPerson = totalDays * daily;
+    const groupCount = Math.max(data.friends.length, 4);
+    
     document.getElementById('res-days').innerText = totalDays;
     document.getElementById('res-p').innerText = "₹" + perPerson.toLocaleString();
-    document.getElementById('res-g').innerText = "₹" + (perPerson * 4).toLocaleString();
+    document.getElementById('res-g').innerText = "₹" + (perPerson * groupCount).toLocaleString();
     document.getElementById('calc-result').style.display = 'block';
 }
 
-// THE NEW SPLIT CALCULATOR LOGIC
 function getExpectedAmount(targetDate) {
     let expected = 0;
     let cur = new Date(START);
@@ -220,36 +243,41 @@ function getExpectedAmount(targetDate) {
     let rateChange = new Date(RATE_CHANGE_DATE);
     rateChange.setHours(0,0,0,0);
 
-    // Count day by day to apply the right rule
     while (cur <= end) {
         if (cur < rateChange) {
-            // Before July 17: Save ₹20, skip Sundays
-            if (cur.getDay() !== 0) {
-                expected += 20;
-            }
+            if (cur.getDay() !== 0) expected += 20; // Old rate, skip Sundays
         } else {
-            // July 17 onwards: Save ₹30, include Sundays
-            expected += 30;
+            expected += 30; // New rate, include Sundays
         }
-        cur.setDate(cur.getDate() + 1); // Move to next day
+        cur.setDate(cur.getDate() + 1);
     }
     return expected;
 }
 
 function render() {
+    // Top button dynamically changes based on login status
+    document.getElementById('admin-btn').innerText = isAdmin ? '⚙️ Admin Settings' : '🔒 Admin Login';
+    document.getElementById('admin-btn').style.background = isAdmin ? '#38bdf8' : '#1e293b';
+    document.getElementById('admin-btn').style.color = isAdmin ? '#0b0f1a' : 'white';
+
+    // Group fund button only visible to admins
+    document.getElementById('group-fund-btn').style.display = isAdmin ? 'block' : 'none';
+
     const today = new Date();
     const activeDate = today > START ? today : START;
     
-    // Uses the new day-by-day split calculator
     const expectedPerPerson = getExpectedAmount(activeDate);
+    const finalExpectedPerPerson = getExpectedAmount(DIWALI);
+    const numFriends = data.friends.length > 0 ? data.friends.length : 4; 
+    const dynamicTargetGoal = finalExpectedPerPerson * numFriends;
     
     const totalSaved = data.friends.reduce((s,f) => s + (f.paid || 0), 0) + data.groupExtra;
     
     document.getElementById('days-left').innerText = getDays(activeDate, DIWALI);
     document.getElementById('total-val').innerText = "₹" + totalSaved.toLocaleString();
-    document.getElementById('target-display').innerText = "Goal: ₹" + data.targetGoal.toLocaleString();
+    document.getElementById('target-display').innerText = "Goal: ₹" + dynamicTargetGoal.toLocaleString();
 
-    const percent = Math.floor(Math.min((totalSaved / data.targetGoal) * 100, 100));
+    const percent = Math.floor(Math.min((totalSaved / dynamicTargetGoal) * 100, 100));
     document.getElementById('main-progress').style.width = percent + "%";
     document.getElementById('percent-text').innerText = percent + "%";
 
@@ -257,6 +285,13 @@ function render() {
     data.friends.forEach((f, i) => {
         const diff = (f.paid || 0) - expectedPerPerson;
         const color = diff < 0 ? 'var(--danger)' : 'var(--success)';
+        
+        // These buttons ONLY render if you are logged in
+        let adminActionButtons = isAdmin ? `
+            <button class="btn-add" onclick="checkPass('add', ${i})">+₹${data.dailyGoal}</button>
+            <button class="btn-custom" onclick="checkPass('custom', ${i})">➕</button>
+        ` : '';
+
         html += `<div class="card">
             <div>
                 <b>${f.name}</b><br>
@@ -264,8 +299,7 @@ function render() {
             </div>
             <div style="display:flex; align-items:center;">
                 <button class="btn-history" onclick="showHistory(${i})">📅</button>
-                <button class="btn-add" onclick="checkPass('add', ${i})">+₹${data.dailyGoal}</button>
-                <button class="btn-custom" onclick="checkPass('custom', ${i})">➕</button>
+                ${adminActionButtons}
             </div>
         </div>`;
     });
@@ -289,7 +323,7 @@ function getDays(from, to) {
     let target = new Date(to);
     target.setHours(0,0,0,0);
     while (cur <= target) { 
-        count++; // Sundays included for simple counting
+        count++; 
         cur.setDate(cur.getDate() + 1); 
     }
     return count;
@@ -323,7 +357,6 @@ function whatsappCommunityShare() {
     const activeDate = today > START ? today : START;
     const daysLeft = getDays(activeDate, DIWALI);
     
-    // Uses the new day-by-day split calculator for WhatsApp shares
     const expectedPerPerson = getExpectedAmount(activeDate);
     const totalSaved = data.friends.reduce((s,f) => s + (f.paid || 0), 0) + data.groupExtra;
 
