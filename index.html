@@ -48,14 +48,14 @@
 <div class="container">
     <div class="header">
         <h2 style="margin:0;">🚢 Mumbai Live</h2>
-        <button class="settings-btn" onclick="checkPass('settings')">⚙️ Admin</button>
+        <button class="settings-btn" id="admin-btn" onclick="checkPass('settings')">🔒 Admin Login</button>
     </div>
 
     <div class="sync-indicator" id="sync-status">Connected & Secure</div>
 
     <div class="days-box">
         <span style="font-size: 2.5em; font-weight: 800; color: var(--primary);" id="days-left">0</span><br>
-        <span style="opacity: 0.6; text-transform: uppercase; font-size: 0.7em;">Days Left till Christmas</span>
+        <span style="opacity: 0.6; text-transform: uppercase; font-size: 0.7em;">Days Left till Diwali</span>
     </div>
 
     <div class="stat-card">
@@ -71,7 +71,9 @@
         </div>
     </div>
 
-    <button class="btn-group" style="margin-top:20px;" onclick="checkPass('found')">✨ Add Group Fund Money</button>
+    <!-- Hidden by default, only shows when Admin is logged in -->
+    <button class="btn-group" id="group-fund-btn" style="margin-top:20px; display:none;" onclick="checkPass('found')">✨ Add Group Fund Money</button>
+    
     <div id="friend-list"></div>
     <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px; border:1px solid #2d3748;"></canvas>
 </div>
@@ -113,6 +115,7 @@
         <hr>
         <div id="manage-friends-list"></div>
         <button class="btn-add" style="width:100%; background:var(--success); margin: 10px 0;" onclick="addNewFriend()">+ Add Friend</button>
+        <button class="btn-add" style="width:100%; background:#f59e0b; margin-top: 10px;" onclick="logoutAdmin()">🔒 Lock Admin Panel</button>
         <button class="btn-add" style="width:100%; background:var(--danger); margin-top: 10px;" onclick="closeModal('settingsModal')">Close & Sync</button>
     </div>
 </div>
@@ -126,7 +129,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzJwspa9tNV3D2mPwxN7JNR
 const ADMIN_PASS = "1234"; 
 
 const START = new Date("March 24, 2026");
-const CHRISTMAS = new Date("December 25, 2026"); // Updated target date!
+const DIWALI = new Date("November 8, 2026");
 const RATE_CHANGE_DATE = new Date("July 17, 2026"); // The exact day the rate changed to 30
 
 let data = { friends: [], groupExtra: 0, dailyGoal: 30 };
@@ -159,6 +162,7 @@ function checkPass(action, index = null) {
     if (p === ADMIN_PASS) { 
         isAdmin = true; 
         localStorage.setItem('isMumbaiAdmin', 'true'); 
+        render(); // Instantly reveals the hidden buttons!
         executeAction(action, index); 
     } else if (p !== null) {
         alert("Incorrect Password! Access Denied.");
@@ -175,6 +179,14 @@ function executeAction(action, index) {
         document.getElementById('new-daily-val').value = data.dailyGoal;
         document.getElementById('calc-start-date').valueAsDate = new Date();
     }
+}
+
+function logoutAdmin() {
+    isAdmin = false;
+    localStorage.removeItem('isMumbaiAdmin');
+    closeModal('settingsModal');
+    render();
+    alert("Admin features locked. The page is now secure.");
 }
 
 function showHistory(i) {
@@ -210,7 +222,7 @@ function calculateOnly() {
     const daily = Number(document.getElementById('calc-daily').value);
     const selectedDate = new Date(document.getElementById('calc-start-date').value);
     if(!daily || isNaN(selectedDate.getTime())) { alert("Please enter a valid amount and date."); return; }
-    const totalDays = getDays(selectedDate, CHRISTMAS);
+    const totalDays = getDays(selectedDate, DIWALI);
     const perPerson = totalDays * daily;
     const groupCount = Math.max(data.friends.length, 4);
     
@@ -243,17 +255,25 @@ function getExpectedAmount(targetDate) {
 }
 
 function render() {
+    // Top button dynamically changes based on login status
+    document.getElementById('admin-btn').innerText = isAdmin ? '⚙️ Admin Settings' : '🔒 Admin Login';
+    document.getElementById('admin-btn').style.background = isAdmin ? '#38bdf8' : '#1e293b';
+    document.getElementById('admin-btn').style.color = isAdmin ? '#0b0f1a' : 'white';
+
+    // Group fund button only visible to admins
+    document.getElementById('group-fund-btn').style.display = isAdmin ? 'block' : 'none';
+
     const today = new Date();
     const activeDate = today > START ? today : START;
     
     const expectedPerPerson = getExpectedAmount(activeDate);
-    const finalExpectedPerPerson = getExpectedAmount(CHRISTMAS);
+    const finalExpectedPerPerson = getExpectedAmount(DIWALI);
     const numFriends = data.friends.length > 0 ? data.friends.length : 4; 
     const dynamicTargetGoal = finalExpectedPerPerson * numFriends;
     
     const totalSaved = data.friends.reduce((s,f) => s + (f.paid || 0), 0) + data.groupExtra;
     
-    document.getElementById('days-left').innerText = getDays(activeDate, CHRISTMAS);
+    document.getElementById('days-left').innerText = getDays(activeDate, DIWALI);
     document.getElementById('total-val').innerText = "₹" + totalSaved.toLocaleString();
     document.getElementById('target-display').innerText = "Goal: ₹" + dynamicTargetGoal.toLocaleString();
 
@@ -265,6 +285,12 @@ function render() {
     data.friends.forEach((f, i) => {
         const diff = (f.paid || 0) - expectedPerPerson;
         const color = diff < 0 ? 'var(--danger)' : 'var(--success)';
+        
+        // These buttons ONLY render if you are logged in
+        let adminActionButtons = isAdmin ? `
+            <button class="btn-add" onclick="checkPass('add', ${i})">+₹${data.dailyGoal}</button>
+            <button class="btn-custom" onclick="checkPass('custom', ${i})">➕</button>
+        ` : '';
 
         html += `<div class="card">
             <div>
@@ -273,8 +299,7 @@ function render() {
             </div>
             <div style="display:flex; align-items:center;">
                 <button class="btn-history" onclick="showHistory(${i})">📅</button>
-                <button class="btn-add" onclick="checkPass('add', ${i})">+₹${data.dailyGoal}</button>
-                <button class="btn-custom" onclick="checkPass('custom', ${i})">➕</button>
+                ${adminActionButtons}
             </div>
         </div>`;
     });
@@ -330,7 +355,7 @@ function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 function whatsappCommunityShare() {
     const today = new Date();
     const activeDate = today > START ? today : START;
-    const daysLeft = getDays(activeDate, CHRISTMAS);
+    const daysLeft = getDays(activeDate, DIWALI);
     
     const expectedPerPerson = getExpectedAmount(activeDate);
     const totalSaved = data.friends.reduce((s,f) => s + (f.paid || 0), 0) + data.groupExtra;
