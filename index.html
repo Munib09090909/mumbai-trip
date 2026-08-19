@@ -156,10 +156,9 @@ async function loadFromCloud() {
 async function saveToCloud() {
     document.getElementById('sync-status').innerText = "☁️ Updating Cloud...";
     try {
-        // FIXED: Using text/plain completely bypasses GitHub Pages CORS restrictions
+        // FIXED: Removed the extra headers so Google Apps Script doesn't block the request!
         await fetch(API_URL, { 
             method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(data) 
         });
         document.getElementById('sync-status').innerText = "✅ Live & Secure";
@@ -176,7 +175,7 @@ function checkPass(action, index = null) {
     if (p === ADMIN_PASS) { 
         isAdmin = true; 
         localStorage.setItem('isMumbaiAdmin', 'true'); 
-        render(); // Instantly reveals the hidden buttons!
+        render(); 
         executeAction(action, index); 
     } else if (p !== null) {
         alert("Incorrect Password! Access Denied.");
@@ -278,6 +277,7 @@ function render() {
     const activeDate = today > START ? today : START;
     
     const expectedPerPerson = getExpectedAmount(activeDate);
+    
     const finalExpectedPerPerson = getExpectedAmount(CHRISTMAS);
     const numFriends = data.friends.length > 0 ? data.friends.length : 4; 
     const dynamicTargetGoal = finalExpectedPerPerson * numFriends;
