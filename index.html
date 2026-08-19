@@ -11,7 +11,7 @@
         .container { max-width: 450px; margin: auto; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; transition: 0.5s; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .settings-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; }
+        .settings-btn { background: #1e293b; border: 1px solid #334155; color: white; padding: 8px 12px; border-radius: 12px; cursor: pointer; font-weight: bold; }
         .days-box { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #334155; }
         .stat-card { background: var(--card); padding: 20px; border-radius: 18px; text-align: center; border: 1px solid #2d3748; }
         
@@ -48,7 +48,7 @@
 <div class="container">
     <div class="header">
         <h2 style="margin:0;">🚢 Mumbai Live</h2>
-        <button class="settings-btn" onclick="checkPass('settings')">⚙️ Admin</button>
+        <button class="settings-btn" id="admin-btn" onclick="checkPass('settings')">🔒 Admin Login</button>
     </div>
 
     <div class="sync-indicator" id="sync-status">Connected & Secure</div>
@@ -71,7 +71,9 @@
         </div>
     </div>
 
-    <button class="btn-group" style="margin-top:20px;" onclick="checkPass('found')">✨ Add Group Fund Money</button>
+    <!-- Hidden by default, only shows when Admin is logged in -->
+    <button class="btn-group" id="group-fund-btn" style="margin-top:20px; display:none;" onclick="checkPass('found')">✨ Add Group Fund Money</button>
+    
     <div id="friend-list"></div>
     <canvas id="chart" style="margin-top:20px; background:var(--card); border-radius:20px; padding:15px; border:1px solid #2d3748;"></canvas>
 </div>
@@ -113,6 +115,7 @@
         <hr>
         <div id="manage-friends-list"></div>
         <button class="btn-add" style="width:100%; background:var(--success); margin: 10px 0;" onclick="addNewFriend()">+ Add Friend</button>
+        <button class="btn-add" style="width:100%; background:#f59e0b; margin-top: 10px;" onclick="logoutAdmin()">🔒 Lock Admin Panel</button>
         <button class="btn-add" style="width:100%; background:var(--danger); margin-top: 10px;" onclick="closeModal('settingsModal')">Close & Sync</button>
     </div>
 </div>
@@ -126,8 +129,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzJwspa9tNV3D2mPwxN7JNR
 const ADMIN_PASS = "1234"; 
 
 const START = new Date("March 24, 2026");
-const CHRISTMAS = new Date("December 25, 2026"); // Updated target date to Christmas!
-const RATE_CHANGE_DATE = new Date("July 17, 2026"); // The exact day the rate changed to 30
+const CHRISTMAS = new Date("December 25, 2026"); 
+const RATE_CHANGE_DATE = new Date("July 17, 2026"); 
 
 let data = { friends: [], groupExtra: 0, dailyGoal: 30 };
 let isAdmin = localStorage.getItem('isMumbaiAdmin') === 'true';
@@ -136,20 +139,34 @@ async function loadFromCloud() {
     try {
         const response = await fetch(API_URL);
         const cloudData = await response.json();
-        if (cloudData.friends) {
+        if (cloudData && cloudData.friends) {
             data = cloudData;
             data.dailyGoal = 30; // SAFEGUARD
             data.friends.forEach(f => { if(!f.history) f.history = []; });
         }
         document.getElementById('loader').style.display = 'none';
         render();
-    } catch (e) { document.getElementById('loader').style.display = 'none'; render(); }
+    } catch (e) { 
+        console.error("Load failed:", e);
+        document.getElementById('loader').style.display = 'none'; 
+        render(); 
+    }
 }
 
 async function saveToCloud() {
     document.getElementById('sync-status').innerText = "☁️ Updating Cloud...";
-    await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
-    document.getElementById('sync-status').innerText = "✅ Live & Secure";
+    try {
+        // FIXED: Using text/plain completely bypasses GitHub Pages CORS restrictions
+        await fetch(API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(data) 
+        });
+        document.getElementById('sync-status').innerText = "✅ Live & Secure";
+    } catch (error) {
+        console.error("Save failed:", error);
+        document.getElementById('sync-status').innerText = "❌ Sync Failed - Check Connection";
+    }
 }
 
 function checkPass(action, index = null) {
@@ -159,6 +176,7 @@ function checkPass(action, index = null) {
     if (p === ADMIN_PASS) { 
         isAdmin = true; 
         localStorage.setItem('isMumbaiAdmin', 'true'); 
+        render(); // Instantly reveals the hidden buttons!
         executeAction(action, index); 
     } else if (p !== null) {
         alert("Incorrect Password! Access Denied.");
@@ -175,6 +193,14 @@ function executeAction(action, index) {
         document.getElementById('new-daily-val').value = data.dailyGoal;
         document.getElementById('calc-start-date').valueAsDate = new Date();
     }
+}
+
+function logoutAdmin() {
+    isAdmin = false;
+    localStorage.removeItem('isMumbaiAdmin');
+    closeModal('settingsModal');
+    render();
+    alert("Admin features locked. The page is now secure.");
 }
 
 function showHistory(i) {
@@ -233,9 +259,9 @@ function getExpectedAmount(targetDate) {
 
     while (cur <= end) {
         if (cur < rateChange) {
-            if (cur.getDay() !== 0) expected += 20; // Old rate, skip Sundays
+            if (cur.getDay() !== 0) expected += 20; 
         } else {
-            expected += 30; // New rate, include Sundays
+            expected += 30; 
         }
         cur.setDate(cur.getDate() + 1);
     }
@@ -243,18 +269,19 @@ function getExpectedAmount(targetDate) {
 }
 
 function render() {
+    document.getElementById('admin-btn').innerText = isAdmin ? '⚙️ Admin Settings' : '🔒 Admin Login';
+    document.getElementById('admin-btn').style.background = isAdmin ? '#38bdf8' : '#1e293b';
+    document.getElementById('admin-btn').style.color = isAdmin ? '#0b0f1a' : 'white';
+    document.getElementById('group-fund-btn').style.display = isAdmin ? 'block' : 'none';
+
     const today = new Date();
     const activeDate = today > START ? today : START;
     
-    // Calculates expected target up to today based on split logic
     const expectedPerPerson = getExpectedAmount(activeDate);
-    
-    // Dynamically calculates the new total goal up to Christmas
     const finalExpectedPerPerson = getExpectedAmount(CHRISTMAS);
     const numFriends = data.friends.length > 0 ? data.friends.length : 4; 
     const dynamicTargetGoal = finalExpectedPerPerson * numFriends;
     
-    // Safely parse numbers to prevent UI glitches
     const totalSaved = data.friends.reduce((s,f) => s + Number(f.paid || 0), 0) + Number(data.groupExtra || 0);
     
     document.getElementById('days-left').innerText = getDays(activeDate, CHRISTMAS);
@@ -270,6 +297,11 @@ function render() {
         const friendPaid = Number(f.paid || 0);
         const diff = friendPaid - expectedPerPerson;
         const color = diff < 0 ? 'var(--danger)' : 'var(--success)';
+        
+        let adminActionButtons = isAdmin ? `
+            <button class="btn-add" onclick="checkPass('add', ${i})">+₹${data.dailyGoal}</button>
+            <button class="btn-custom" onclick="checkPass('custom', ${i})">➕</button>
+        ` : '';
 
         html += `<div class="card">
             <div>
@@ -278,8 +310,7 @@ function render() {
             </div>
             <div style="display:flex; align-items:center;">
                 <button class="btn-history" onclick="showHistory(${i})">📅</button>
-                <button class="btn-add" onclick="checkPass('add', ${i})">+₹${data.dailyGoal}</button>
-                <button class="btn-custom" onclick="checkPass('custom', ${i})">➕</button>
+                ${adminActionButtons}
             </div>
         </div>`;
     });
@@ -311,7 +342,6 @@ function getDays(from, to) {
 
 async function addMoney(i, amt) {
     const friend = data.friends[i];
-    // Safety check to absolutely ensure math works as a number, not text string
     friend.paid = Number(friend.paid || 0) + Number(amt);
     if(!friend.history) friend.history = [];
     
@@ -362,4 +392,3 @@ loadFromCloud();
 </script>
 </body>
 </html>
-
